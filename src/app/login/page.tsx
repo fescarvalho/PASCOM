@@ -49,46 +49,50 @@ export default function LoginPage() {
                         </div>
                     </div>
 
-                    <div className="w-full bg-white/[0.03] backdrop-blur-2xl border border-white/10 rounded-[32px] p-4 flex items-center justify-center overflow-hidden shadow-2xl">
+                    <div className="w-full flex items-center justify-center py-12">
                         <img
                             src="/logo.jpg"
                             alt="PASCOM"
-                            width={260}
-                            height={80}
-                            className="max-h-12 md:max-h-20 w-auto filter grayscale invert brightness-200 contrast-125 transition-all duration-700"
-                            style={{ mixBlendMode: 'screen' }}
+                            width={300}
+                            height={90}
+                            className="max-h-14 md:max-h-20 w-auto filter grayscale brightness-125 contrast-125 transition-all duration-700"
+                            style={{
+                                mixBlendMode: 'screen',
+                                maskImage: 'linear-gradient(to bottom, transparent, black 5%, black 95%, transparent), linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
+                                maskComposite: 'intersect'
+                            }}
                         />
                     </div>
                 </div>
 
                 {/* Form Card */}
-                <div className="w-full bg-[#0a0a0f]/80 backdrop-blur-3xl rounded-[48px] p-8 md:p-14 shadow-2xl relative overflow-hidden animate-in" style={{ animationDelay: '0.1s' }}>
-                    <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
+                <div className="w-full bg-[#0a0a0f]/80 backdrop-blur-3xl rounded-[48px] p-8 md:p-12 shadow-[0_40px_100px_rgba(0,0,0,0.8)] relative overflow-hidden animate-in" style={{ animationDelay: '0.1s' }}>
+                    <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
 
-                    <form onSubmit={handleLogin} className="space-y-12 md:space-y-16">
-                        <div className="space-y-12 md:space-y-16">
-                            <div className="flex items-center h-[68px] md:h-[84px] bg-white/[0.04] rounded-3xl md:rounded-[32px] focus-within:bg-white/[0.07] transition-all duration-300 group/input">
-                                <div className="w-16 md:w-20 flex items-center justify-center text-zinc-600 group-focus-within/input:text-blue-500 transition-colors">
+                    <form onSubmit={handleLogin} className="flex flex-col gap-y-14 md:gap-y-20">
+                        <div className="flex flex-col gap-y-12 md:gap-y-16">
+                            <div className="flex items-center h-[72px] md:h-[84px] bg-white/[0.04] rounded-[28px] md:rounded-[32px] border border-white/[0.03] focus-within:bg-white/[0.07] transition-all duration-300 group/input">
+                                <div className="w-16 md:w-24 flex items-center justify-center text-zinc-600 group-focus-within/input:text-blue-500 transition-colors">
                                     <Mail className="w-5 h-5 md:w-6 md:h-6" />
                                 </div>
                                 <input
                                     type="email"
                                     placeholder="Credencial"
-                                    className="flex-1 h-full bg-transparent pr-8 text-white text-base md:text-lg outline-none placeholder:text-zinc-600 font-medium"
+                                    className="flex-1 h-full bg-transparent pr-8 text-white text-base md:text-lg outline-none placeholder:text-zinc-600 font-medium tracking-wide"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
                                 />
                             </div>
 
-                            <div className="flex items-center h-[68px] md:h-[84px] bg-white/[0.04] rounded-3xl md:rounded-[32px] focus-within:bg-white/[0.07] transition-all duration-300 group/input">
-                                <div className="w-16 md:w-20 flex items-center justify-center text-zinc-600 group-focus-within/input:text-blue-500 transition-colors">
+                            <div className="flex items-center h-[72px] md:h-[84px] bg-white/[0.04] rounded-[28px] md:rounded-[32px] border border-white/[0.03] focus-within:bg-white/[0.07] transition-all duration-300 group/input">
+                                <div className="w-16 md:w-24 flex items-center justify-center text-zinc-600 group-focus-within/input:text-blue-500 transition-colors">
                                     <Lock className="w-5 h-5 md:w-6 md:h-6" />
                                 </div>
                                 <input
                                     type="password"
                                     placeholder="Senha"
-                                    className="flex-1 h-full bg-transparent pr-8 text-white text-base md:text-lg outline-none placeholder:text-zinc-600 font-medium"
+                                    className="flex-1 h-full bg-transparent pr-8 text-white text-base md:text-lg outline-none placeholder:text-zinc-600 font-medium tracking-wide"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
@@ -102,13 +106,15 @@ export default function LoginPage() {
                             </div>
                         )}
 
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full bg-[#0000FF] hover:bg-blue-600 text-white font-black py-5 md:py-7 rounded-[32px] text-[11px] md:text-sm uppercase tracking-[0.25em] transition-all transform active:scale-[0.98] shadow-[0_15px_40px_rgba(0,0,255,0.3)] flex items-center justify-center min-h-[64px] md:min-h-[72px]"
-                        >
-                            {loading ? <Loader2 className="animate-spin" size={24} /> : 'AUTENTICAR NO SISTEMA'}
-                        </button>
+                        <div className="pt-2">
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 md:py-6 rounded-[28px] md:rounded-[32px] text-[11px] md:text-sm uppercase tracking-[0.35em] transition-all transform active:scale-[0.98] shadow-[0_20px_40px_rgba(0,0,255,0.3)] flex items-center justify-center min-h-[60px] md:min-h-[72px]"
+                            >
+                                {loading ? <Loader2 className="animate-spin" size={24} /> : 'AUTENTICAR'}
+                            </button>
+                        </div>
                     </form>
                 </div>
 
