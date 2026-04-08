@@ -1,0 +1,34 @@
+-- =============================================
+-- PASCOM - Seed de Membros
+-- Execute APÓS criar os usuários no Supabase Auth
+-- =============================================
+-- NOTA: Primeiro crie os usuários no Supabase Auth Dashboard
+-- Depois execute este script para atualizar os perfis
+
+-- Ou use diretamente se os perfis já foram criados pelo trigger:
+-- Apenas atualize os nomes e roles dos admins
+
+-- Admins: Cássius Silva e Pedro Henrique
+-- UPDATE profiles SET role = 'admin' WHERE email IN ('cassius@pascom.com', 'pedro@pascom.com');
+
+-- Lista dos 20 membros (para referência ao criar no Supabase Auth):
+-- 1. Mariana Almeida - mariana@pascom.com
+-- 2. Alicia Arenari - alicia@pascom.com
+-- 3. João Pedro - joaopedro@pascom.com
+-- 4. Cássius Silva (Admin) - cassius@pascom.com
+-- 5. Pedro Henrique (Admin) - pedro@pascom.com
+-- 6. Ana Clara Santos - anaclara@pascom.com
+-- 7. Lucas Oliveira - lucas@pascom.com
+-- 8. Beatriz Ferreira - beatriz@pascom.com
+-- 9. Gabriel Costa - gabriel@pascom.com
+-- 10. Isabela Rodrigues - isabela@pascom.com
+-- 11. Matheus Souza - matheus@pascom.com
+-- 12. Laura Pereira - laura@pascom.com
+-- 13. Rafael Lima - rafael@pascom.com
+-- 14. Sofia Carvalho - sofia@pascom.com
+-- 15. Thiago Martins - thiago@pascom.com
+-- 16. Valentina Rocha - valentina@pascom.com
+-- 17. Felipe Araújo - felipe@pascom.com
+-- 18. Helena Ribeiro - helena@pascom.com
+-- 19. Daniel Monteiro - daniel@pascom.com
+-- 20. Camila Barbosa - camila@pascom.com
