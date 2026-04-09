@@ -228,10 +228,10 @@ export function AdminClient({ profiles }: AdminClientProps) {
                                         </div>
                                     </div>
 
-                                    <div className="flex bg-surface-container-low p-1.5 rounded-full border border-outline-variant/10 shadow-inner">
-                                        <button onClick={() => setViewFilter('semana')} className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${viewFilter === 'semana' ? 'bg-surface-container-highest text-primary shadow-sm border border-primary/10' : 'text-gray-500 hover:text-white'}`}>Semana</button>
-                                        <button onClick={() => setViewFilter('mes')} className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${viewFilter === 'mes' ? 'bg-surface-container-highest text-primary shadow-sm border border-primary/10' : 'text-gray-500 hover:text-white'}`}>Mês</button>
-                                        <button onClick={() => setViewFilter('equipes')} className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${viewFilter === 'equipes' ? 'bg-surface-container-highest text-primary shadow-sm border border-primary/10' : 'text-gray-500 hover:text-white'}`}>Equipes</button>
+                                    <div className="flex bg-surface-container-low p-1.5 rounded-full border border-outline-variant/10 shadow-inner overflow-x-auto no-scrollbar max-w-full">
+                                        <button onClick={() => setViewFilter('semana')} className={`whitespace-nowrap px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${viewFilter === 'semana' ? 'bg-surface-container-highest text-primary shadow-sm border border-primary/10' : 'text-gray-500 hover:text-white'}`}>Semana</button>
+                                        <button onClick={() => setViewFilter('mes')} className={`whitespace-nowrap px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${viewFilter === 'mes' ? 'bg-surface-container-highest text-primary shadow-sm border border-primary/10' : 'text-gray-500 hover:text-white'}`}>Mês</button>
+                                        <button onClick={() => setViewFilter('equipes')} className={`whitespace-nowrap px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${viewFilter === 'equipes' ? 'bg-surface-container-highest text-primary shadow-sm border border-primary/10' : 'text-gray-500 hover:text-white'}`}>Equipes</button>
                                     </div>
                                 </div>
                             </section>
@@ -340,14 +340,14 @@ export function AdminClient({ profiles }: AdminClientProps) {
                                 </div>
 
                                 {/* List Section Header */}
-                                <div className="col-span-12 mt-12 flex items-center justify-between border-b border-outline-variant/10 pb-6">
-                                    <h3 className="text-3xl font-black font-manrope tracking-tighter text-white">Listagem de Escalas</h3>
-                                    <div className="flex gap-4">
-                                        <button className="flex items-center gap-2 px-6 py-2.5 bg-surface-container-low rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-surface-container-high transition-all border border-outline-variant/10 shadow-sm">
+                                <div className="col-span-12 mt-12 flex flex-col md:flex-row items-center md:items-end justify-between border-b border-outline-variant/10 pb-6 gap-6 text-center md:text-left">
+                                    <h3 className="text-3xl font-black font-manrope tracking-tighter text-white w-full">Listagem de Escalas</h3>
+                                    <div className="flex flex-wrap justify-center md:justify-end w-full gap-4">
+                                        <button className="flex items-center justify-center gap-2 px-6 py-2.5 bg-surface-container-low rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-surface-container-high transition-all border border-outline-variant/10 shadow-sm flex-1 md:flex-none">
                                             <Filter size={16} />
                                             Filtrar Função
                                         </button>
-                                        <button className="flex items-center gap-2 px-6 py-2.5 bg-surface-container-low rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-surface-container-high transition-all border border-outline-variant/10 shadow-sm">
+                                        <button className="flex items-center justify-center gap-2 px-6 py-2.5 bg-surface-container-low rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-surface-container-high transition-all border border-outline-variant/10 shadow-sm flex-1 md:flex-none">
                                             <Share2 size={16} />
                                             Exportar PDF
                                         </button>
@@ -359,20 +359,20 @@ export function AdminClient({ profiles }: AdminClientProps) {
                                     {events.map((event) => (
                                         <div
                                             key={event.id}
-                                            className="bg-surface-container rounded-2xl p-6 flex flex-col md:flex-row items-center hover:bg-surface-container-high transition-all group border border-transparent hover:border-outline-variant/10"
+                                            className="bg-surface-container rounded-3xl p-6 flex flex-col md:flex-row items-center hover:bg-surface-container-high transition-all group border border-transparent hover:border-outline-variant/10 gap-6 md:gap-8"
                                         >
-                                            <div className="w-16 h-16 flex flex-col items-center justify-center bg-surface-container-highest rounded-2xl text-primary font-black mr-8 border border-outline-variant/10 gap-0.5 shadow-sm group-hover:scale-105 transition-transform shrink-0">
+                                            <div className="w-16 h-16 flex flex-col items-center justify-center bg-surface-container-highest rounded-2xl text-primary font-black border border-outline-variant/10 gap-0.5 shadow-sm group-hover:scale-105 transition-transform shrink-0">
                                                 <span className="text-lg leading-none">{format(parseISO(event.event_date), "dd")}</span>
                                                 <span className="text-[9px] uppercase font-bold tracking-widest">{format(parseISO(event.event_date), "MMM")}</span>
                                             </div>
 
-                                            <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-8 items-center w-full mt-4 md:mt-0">
+                                            <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6 items-center w-full text-center md:text-left">
                                                 <div className="md:col-span-1">
                                                     <h4 className="font-black text-white text-base tracking-tight truncate group-hover:text-primary transition-colors">{event.title}</h4>
                                                     <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">{event.event_time.slice(0, 5)}h</p>
                                                 </div>
 
-                                                <div className="flex flex-wrap gap-2">
+                                                <div className="flex flex-wrap justify-center md:justify-start gap-2">
                                                     {event.assignments?.slice(0, 2).map((as: any) => (
                                                         <span key={as.id} className="inline-flex items-center gap-2 px-3 py-1 bg-surface-container-highest rounded-full text-[9px] font-black uppercase tracking-wider text-primary border border-primary/10 overflow-hidden max-w-[150px]">
                                                             {as.function_type === 'live' && <Music size={12} className="shrink-0" />}
@@ -386,7 +386,7 @@ export function AdminClient({ profiles }: AdminClientProps) {
                                                     )}
                                                 </div>
 
-                                                <div className="flex -space-x-3 overflow-hidden">
+                                                <div className="flex -space-x-3 overflow-hidden justify-center md:justify-start">
                                                     {event.assignments?.map((as: any) => (
                                                         <div key={as.id} className="flex-shrink-0 h-10 w-10 rounded-full ring-4 ring-surface-container bg-surface-container-highest flex items-center justify-center text-[10px] font-black text-gray-400 border border-outline-variant/20 overflow-hidden">
                                                             {as.profiles?.avatar_url ? (
