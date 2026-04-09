@@ -13,6 +13,8 @@ import {
     LogOut,
     Bell,
     ChevronRight,
+    Menu,
+    X,
 } from 'lucide-react';
 
 interface AppShellProps {
@@ -25,6 +27,7 @@ export function AppShell({ profile, children }: AppShellProps) {
     const router = useRouter();
     const pathname = usePathname();
     const supabase = createClient();
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const isAdmin = profile?.role === 'admin';
 
     const handleLogout = async () => {
@@ -39,13 +42,18 @@ export function AppShell({ profile, children }: AppShellProps) {
         ...(isAdmin ? [{ href: '/admin', label: 'Painel Admin', icon: Settings }] : []),
     ];
 
+    const closeSidebar = () => setIsSidebarOpen(false);
+
     const NavLink = ({ item }: { item: any }) => {
         const Icon = item.icon;
         const isActive = pathname === item.href;
 
         return (
             <button
-                onClick={() => router.push(item.href)}
+                onClick={() => {
+                    router.push(item.href);
+                    closeSidebar();
+                }}
                 className={`group relative flex items-center gap-4 w-full px-5 py-4 rounded-2xl transition-all duration-300 overflow-hidden
           ${isActive
                         ? 'bg-primary text-white shadow-[0_8px_20px_rgba(0,0,255,0.3)]'
@@ -79,14 +87,25 @@ export function AppShell({ profile, children }: AppShellProps) {
 
     return (
         <div className="flex min-h-screen bg-[#000000] text-white">
-            {/* Sidebar - Desktop Only */}
-            <aside className="hidden md:flex flex-col w-[280px] fixed inset-y-0 left-0 border-r border-zinc-900/50 bg-[#050505] z-50">
-                <div className="h-24 px-8 border-b border-zinc-900/50 flex items-center gap-4 group">
+            {/* Backdrop for Mobile Sidebar */}
+            {isSidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] md:hidden animate-in fade-in duration-300"
+                    onClick={closeSidebar}
+                />
+            )}
+
+            {/* Sidebar - Desktop (Flex) & Mobile (Drawer) */}
+            <aside
+                className={`flex flex-col w-[280px] fixed md:sticky inset-y-0 left-0 border-r border-zinc-900/50 bg-[#050505] z-[60] transition-transform duration-500 ease-out md:translate-x-0 
+          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
+            >
+                <div className="h-24 px-8 border-b border-zinc-900/50 flex items-center gap-4 group flex-shrink-0">
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-blue-900 flex items-center justify-center shadow-lg shadow-primary/20 rotate-3 group-hover:rotate-0 transition-transform duration-500">
                         <Radio size={24} className="text-white" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-black tracking-tighter leading-none mb-1 text-white">
+                        <h1 className="text-xl font-black tracking-tighter text-white">
                             PASCOM
                         </h1>
                         <p className="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em]">
@@ -95,7 +114,7 @@ export function AppShell({ profile, children }: AppShellProps) {
                     </div>
                 </div>
 
-                <nav className="flex-1 px-4 py-8 space-y-3">
+                <nav className="flex-1 px-4 py-8 space-y-3 overflow-y-auto">
                     <div className="px-5 mb-4">
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-700">Navegação Principal</p>
                     </div>
@@ -105,7 +124,7 @@ export function AppShell({ profile, children }: AppShellProps) {
                 </nav>
 
                 {/* Improved User section */}
-                <div className="p-4 mt-auto pb-12">
+                <div className="p-4 mt-auto pb-8 flex-shrink-0">
                     <div className="p-4 rounded-3xl bg-zinc-900/20 border border-white/5 space-y-4">
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center text-sm font-black shadow-md">
@@ -135,10 +154,18 @@ export function AppShell({ profile, children }: AppShellProps) {
             </aside>
 
             {/* Main Wrapper */}
-            <div className="flex-1 flex flex-col md:ml-[280px] min-w-0 pb-20 md:pb-0">
+            <div className="flex-1 flex flex-col min-w-0 pb-20 md:pb-0 transition-all duration-300">
                 {/* Sleek Top Header */}
                 <header className="sticky top-0 z-40 h-16 md:h-20 bg-black/60 backdrop-blur-2xl flex items-center justify-between px-6 md:px-10 border-b border-zinc-900/40">
                     <div className="flex items-center gap-6">
+                        {/* Hamburger Button */}
+                        <button
+                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                            className="p-2 -ml-2 text-zinc-400 hover:text-white transition-colors md:hidden"
+                        >
+                            {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+                        </button>
+
                         <div className="hidden md:flex items-center gap-3 text-zinc-400">
                             <div className="w-1 h-5 bg-primary/40 rounded-full" />
                             <h2 className="text-sm font-black uppercase tracking-widest">
