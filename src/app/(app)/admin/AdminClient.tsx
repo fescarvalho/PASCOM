@@ -184,6 +184,35 @@ export function AdminClient({ profiles }: AdminClientProps) {
         setLoading(false);
     };
 
+    const handleExportPDF = async () => {
+        try {
+            setLoading(true);
+            showToast('Gerando documento PDF...', 'success');
+            const html2pdf = (await import('html2pdf.js')).default;
+            const element = document.getElementById('pdf-export-container');
+            if (!element) return;
+
+            element.style.display = 'block';
+
+            const opt = {
+                margin: 10,
+                filename: `Escala_Pascom_${format(new Date(), "MMM_yyyy")}.pdf`,
+                image: { type: 'jpeg', quality: 1.0 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            await html2pdf().set(opt).from(element).save();
+        } catch (error) {
+            console.error('PDF error:', error);
+            showToast('Erro ao exportar PDF', 'error');
+        } finally {
+            const element = document.getElementById('pdf-export-container');
+            if (element) element.style.display = 'none';
+            setLoading(false);
+        }
+    };
+
     const nextEvent = events[0];
 
     return (
@@ -341,7 +370,7 @@ export function AdminClient({ profiles }: AdminClientProps) {
                                             <Filter size={16} />
                                             Filtrar Função
                                         </button>
-                                        <button onClick={() => window.print()} className="flex items-center justify-center gap-2 px-6 py-2.5 bg-surface-container-low rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-surface-container-high transition-all border border-outline-variant/10 shadow-sm flex-1 md:flex-none">
+                                        <button onClick={handleExportPDF} className="flex items-center justify-center gap-2 px-6 py-2.5 bg-surface-container-low rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-surface-container-high transition-all border border-outline-variant/10 shadow-sm flex-1 md:flex-none">
                                             <Share2 size={16} />
                                             Exportar PDF
                                         </button>
@@ -578,6 +607,45 @@ export function AdminClient({ profiles }: AdminClientProps) {
                     </div>
                 )}
             </main>
+
+            {/* Hidden PDF Export Structure - Designed strictly for A4 fitting limit */}
+            <div id="pdf-export-container" style={{ display: 'none', background: 'white', color: 'black', padding: '15mm', fontFamily: 'sans-serif', boxSizing: 'border-box' }} className="w-[210mm] min-h-[297mm]">
+                <div style={{ borderBottom: '2px solid #111', paddingBottom: '10px', marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                    <div>
+                        <h1 style={{ fontSize: '24px', fontWeight: '900', margin: 0, textTransform: 'uppercase', letterSpacing: '-1px' }}>Escala Operacional • PASCOM</h1>
+                        <p style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', margin: '4px 0 0 0', textTransform: 'uppercase', letterSpacing: '1px' }}>Gerado em: {format(new Date(), "dd/MM/yyyy • HH:mm", { locale: ptBR })}</p>
+                    </div>
+                    <div style={{ fontSize: '14px', fontWeight: '900', letterSpacing: '2px', background: '#111', color: '#fff', padding: '4px 12px', borderRadius: '4px' }}>
+                        {format(new Date(), "MMMM yyyy", { locale: ptBR })}
+                    </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: events.length > 5 ? '1fr 1fr' : '1fr', gap: '8px' }}>
+                    {events.map((event, index) => (
+                        <div key={index} style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '10px', pageBreakInside: 'avoid', background: '#fafafa' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eaeaea', paddingBottom: '6px', marginBottom: '8px', alignItems: 'center' }}>
+                                <div style={{ fontSize: '13px', fontWeight: '900', color: '#222' }}>{event.title}</div>
+                                <div style={{ fontSize: '11px', color: '#111', fontWeight: '800', background: '#e0e0e0', padding: '2px 8px', borderRadius: '12px' }}>
+                                    {format(parseISO(event.event_date), "dd/MM")} • {event.event_time.slice(0, 5)}h
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                {event.assignments?.length > 0 ? event.assignments.map((as: any, i: number) => (
+                                    <div key={i} style={{ display: 'inline-flex', alignItems: 'center', fontSize: '10px', background: '#fff', padding: '2px 6px', borderRadius: '4px', border: '1px solid #ccc', margin: '2px 0' }}>
+                                        <b style={{ marginRight: '4px', textTransform: 'uppercase', color: '#555' }}>{(FUNCTION_LABELS[as.function_type as FunctionType] || as.function_type).slice(0, 5)}:</b>
+                                        <span style={{ fontWeight: 'bold', color: '#000' }}>{as.profiles?.full_name?.split(' ')[0] || 'Sem Nome'}</span>
+                                    </div>
+                                )) : (
+                                    <div style={{ fontSize: '10px', color: '#999', fontStyle: 'italic', padding: '4px' }}>Nenhuma equipe escalada para este evento...</div>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+                <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '9px', color: '#999', borderTop: '1px dashed #ddd', paddingTop: '10px' }}>
+                    Sistema Pastoral de Comunicação • Painel Administrativo Automático
+                </div>
+            </div>
 
             {/* Toast Notifications */}
             {toast && (
