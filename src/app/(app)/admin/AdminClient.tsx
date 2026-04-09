@@ -155,15 +155,21 @@ export function AdminClient({ profiles }: AdminClientProps) {
             password: formData.get('password') as string | undefined,
         };
 
-        const res = await registerMember(data);
-        if (res.success) {
-            showToast(`Membro cadastrado com sucesso! SENHA: ${res.tempPassword}`, 'success');
-            (e.target as HTMLFormElement).reset();
-            setIsFormOpen(false);
-        } else {
-            showToast(res.error || 'Erro ao cadastrar.', 'error');
+        try {
+            const res = await registerMember(data);
+            if (res.success) {
+                showToast(`Membro cadastrado com sucesso! SENHA: ${res.tempPassword}`, 'success');
+                (e.target as HTMLFormElement).reset();
+                setIsFormOpen(false);
+            } else {
+                showToast(res.error || 'Erro ao cadastrar.', 'error');
+            }
+        } catch (error: any) {
+            console.error('Crash in registerMember:', error);
+            showToast(error.message || 'Erro inesperado no servidor. Tente novamente.', 'error');
+        } finally {
+            setLoading(false);
         }
-        setLoading(false);
     };
 
     const handleDeleteMember = async (id: string) => {
@@ -185,12 +191,12 @@ export function AdminClient({ profiles }: AdminClientProps) {
             {/* Main Content Area */}
             <main className="main-content flex-1 flex flex-col relative w-full max-w-full overflow-hidden">
                 {/* TopAppBar */}
-                <header className="sticky top-0 right-0 w-full h-20 bg-surface-dim/60 backdrop-blur-xl flex justify-between items-center px-6 md:px-10 z-40 border-b border-outline-variant/5">
-                    <div className="flex bg-surface-container-low p-1 rounded-full border border-outline-variant/10 shadow-inner">
-                        <button onClick={() => setActiveTab('events')} className={`px-6 md:px-8 py-2 md:py-3 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'events' ? 'bg-surface-container-highest text-primary shadow-sm border border-primary/10' : 'text-gray-500 hover:text-white'}`}>
+                <header className="sticky top-0 right-0 w-full min-h-[80px] bg-surface-dim/60 backdrop-blur-xl flex flex-col sm:flex-row justify-center sm:justify-between items-center px-4 sm:px-6 md:px-10 z-40 border-b border-outline-variant/5 gap-4 py-4 sm:py-0">
+                    <div className="flex bg-surface-container-low p-1 rounded-full border border-outline-variant/10 shadow-inner overflow-hidden">
+                        <button onClick={() => setActiveTab('events')} className={`px-4 sm:px-6 md:px-8 py-2 md:py-3 rounded-full text-[9px] sm:text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'events' ? 'bg-surface-container-highest text-primary shadow-sm border border-primary/10' : 'text-gray-500 hover:text-white'}`}>
                             Escalas
                         </button>
-                        <button onClick={() => setActiveTab('members')} className={`px-6 md:px-8 py-2 md:py-3 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'members' ? 'bg-surface-container-highest text-primary shadow-sm border border-primary/10' : 'text-gray-500 hover:text-white'}`}>
+                        <button onClick={() => setActiveTab('members')} className={`px-4 sm:px-6 md:px-8 py-2 md:py-3 rounded-full text-[9px] sm:text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'members' ? 'bg-surface-container-highest text-primary shadow-sm border border-primary/10' : 'text-gray-500 hover:text-white'}`}>
                             Membros
                         </button>
                     </div>
@@ -212,9 +218,9 @@ export function AdminClient({ profiles }: AdminClientProps) {
                         <>
                             {/* Hero Header */}
                             <section className="mb-12">
-                                <div className="flex justify-between items-end">
+                                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                                     <div>
-                                        <h2 className="text-7xl font-black font-manrope tracking-tighter text-white mb-2 leading-none">Escalas do Grupo</h2>
+                                        <h2 className="text-5xl md:text-7xl font-black font-manrope tracking-tighter text-white mb-2 leading-none">Escalas do Grupo</h2>
                                         <div className="flex items-center gap-4">
                                             <span className="text-primary font-bold tracking-[0.2em] uppercase text-[10px]">{format(new Date(), "MMMM yyyy", { locale: ptBR })}</span>
                                             <div className="h-px w-24 bg-surface-container-highest"></div>
@@ -413,9 +419,9 @@ export function AdminClient({ profiles }: AdminClientProps) {
                     ) : (
                         <div className="animate-in fade-in slide-in-from-bottom-6 duration-700">
                             <section className="mb-12">
-                                <div className="flex justify-between items-end">
+                                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                                     <div>
-                                        <h2 className="text-7xl font-black font-manrope tracking-tighter text-white mb-2 leading-none">Membros Pascom</h2>
+                                        <h2 className="text-5xl md:text-7xl font-black font-manrope tracking-tighter text-white mb-2 leading-none">Membros Pascom</h2>
                                         <div className="flex items-center gap-4">
                                             <span className="text-primary font-bold tracking-[0.2em] uppercase text-[10px]">Time de Elite</span>
                                             <div className="h-px w-24 bg-surface-container-highest"></div>
