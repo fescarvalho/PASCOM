@@ -68,17 +68,17 @@ export async function claimSlot(eventId: string, functionType: FunctionType) {
         return { error: `Limite de ${limit} vaga(s) atingido para esta função.` };
     }
 
-    // Check if user already has this function in this event
+    // Check if user already has ANY function in this event
     const { data: existing } = await supabase
         .from('assignments')
         .select('id')
         .eq('event_id', eventId)
         .eq('user_id', user.id)
-        .eq('function_type', functionType)
-        .single();
+        .limit(1)
+        .maybeSingle();
 
     if (existing) {
-        return { error: 'Você já está escalado nesta função.' };
+        return { error: 'Você já possui uma função nesta escala. Não é possível acumular.' };
     }
 
     // Create the assignment
