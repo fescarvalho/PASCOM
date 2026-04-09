@@ -1,10 +1,20 @@
 import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
+import { Outfit, Manrope, Inter } from "next/font/google";
 import "./globals.css";
 
 const outfit = Outfit({
     subsets: ["latin"],
     variable: "--font-outfit",
+});
+
+const manrope = Manrope({
+    subsets: ["latin"],
+    variable: "--font-manrope",
+});
+
+const inter = Inter({
+    subsets: ["latin"],
+    variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
@@ -20,7 +30,10 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="pt-BR" className="dark scroll-smooth">
-            <body className={`${outfit.variable} font-sans antialiased overflow-x-hidden w-full`}>
+            <head>
+                <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" />
+            </head>
+            <body className={`${outfit.variable} ${manrope.variable} ${inter.variable} font-sans antialiased overflow-x-hidden w-full`}>
                 {children}
             </body>
         </html>

@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 
 export async function createEvent(formData: {
@@ -218,4 +219,97 @@ export async function generateRecurringEvents(weeksAhead: number = 4) {
     revalidatePath('/dashboard');
     revalidatePath('/admin');
     return { success: true, count: newEvents.length };
+}
+
+export async function registerMember(formData: {
+    full_name: string;
+    email: string;
+    role: 'member' | 'admin';
+    password?: string;
+}) {
+    const supabase = await createClient();
+    const adminClient = createAdminClient();
+
+    // Check if current user is admin
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: 'Não autenticado.' };
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') {
+        return { error: 'Acesso negado.' };
+    }
+
+    // Generate a temporary random password if not provided
+    const finalPassword = formData.password || (Math.random().toString(36).slice(-10) + 'A1!');
+
+    // 1. Create Auth User (Admin Client)
+    const { data: authUser, error: authError } = await adminClient.auth.admin.createUser({
+        email: formData.email,
+        password: finalPassword,
+        email_confirm: true,
+        user_metadata: { full_name: formData.full_name }
+    });
+
+    if (authError) {
+        console.error('Auth Error:', authError);
+        return { error: `Erro ao criar usuário: ${authError.message}` };
+    }
+
+    // 2. Create Profile
+    const { error: profileError } = await adminClient
+        .from('profiles')
+        .insert({
+            id: authUser.user.id,
+            full_name: formData.full_name,
+            email: formData.email,
+            role: formData.role
+        });
+
+    if (profileError) {
+        console.error('Profile Error:', profileError);
+        // Clean up auth user if profile fail
+        await adminClient.auth.admin.deleteUser(authUser.user.id);
+        return { error: 'Erro ao criar perfil do usuário.' };
+    }
+
+    revalidatePath('/admin');
+    revalidatePath('/membros');
+    return { success: true, tempPassword: finalPassword };
+}
+
+export async function deleteMember(memberId: string) {
+    const supabase = await createClient();
+    const adminClient = createAdminClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: 'Não autenticado.' };
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') {
+        return { error: 'Acesso negado.' };
+    }
+
+    // 1. Delete Auth User (cascades or we handle profiles manually if needed)
+    const { error: authError } = await adminClient.auth.admin.deleteUser(memberId);
+
+    if (authError) {
+        return { error: 'Erro ao deletar usuário do Auth.' };
+    }
+
+    // Profile usually cascades if DB is set up right, but we can be explicit
+    await adminClient.from('profiles').delete().eq('id', memberId);
+
+    revalidatePath('/admin');
+    revalidatePath('/membros');
+    return { success: true };
 }

@@ -16,5 +16,10 @@ export default async function AdminPage() {
         redirect('/dashboard');
     }
 
-    return <AdminClient />;
+    const { data: allMembers } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('full_name', { ascending: true });
+
+    return <AdminClient profiles={allMembers || []} />;
 }
