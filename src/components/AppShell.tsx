@@ -38,8 +38,10 @@ export function AppShell({ profile, children }: AppShellProps) {
 
     const navItems = [
         { href: '/dashboard', label: 'Escalas', icon: CalendarDays },
-        { href: '/membros', label: 'Membros', icon: Users },
-        ...(isAdmin ? [{ href: '/admin', label: 'Painel Admin', icon: Settings }] : []),
+        ...(isAdmin ? [
+            { href: '/membros', label: 'Membros', icon: Users },
+            { href: '/admin', label: 'Painel Admin', icon: Settings }
+        ] : []),
     ];
 
     const closeSidebar = () => setIsSidebarOpen(false);

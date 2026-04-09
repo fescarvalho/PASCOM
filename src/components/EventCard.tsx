@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import type { EventWithAssignments, FunctionType, EventType, Assignment } from '@/types';
 import { FUNCTION_LABELS, SLOT_LIMITS, ACTIVE_FUNCTIONS } from '@/types';
 import { claimSlot, releaseSlot } from '@/app/(app)/dashboard/actions';
@@ -37,6 +37,12 @@ export function EventCard({ event, currentUserId, isAdmin }: EventCardProps) {
     const [isPending, startTransition] = useTransition();
     const [activeAction, setActiveAction] = useState<string | null>(null);
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+    const [localAssignments, setLocalAssignments] = useState<Assignment[]>(event.assignments || []);
+
+    // Sync with server if event.assignments changes (e.g. Next.js revalidates)
+    useEffect(() => {
+        setLocalAssignments(event.assignments || []);
+    }, [event.assignments]);
 
     const eventDate = parseISO(event.event_date);
     const dayName = format(eventDate, 'EEEE', { locale: ptBR });
@@ -55,6 +61,14 @@ export function EventCard({ event, currentUserId, isAdmin }: EventCardProps) {
             if (result.error) {
                 showToast('error', result.error);
             } else {
+                // Optimistic UI update
+                setLocalAssignments(prev => [...prev, {
+                    id: `temp-${Date.now()}`,
+                    event_id: event.id,
+                    user_id: currentUserId,
+                    function_type: functionType,
+                    profiles: { id: currentUserId, full_name: 'Você (Carregando...)', role: 'member' }
+                } as any]);
                 showToast('success', `Vaga de ${FUNCTION_LABELS[functionType]} assumida!`);
             }
             setActiveAction(null);
@@ -68,6 +82,8 @@ export function EventCard({ event, currentUserId, isAdmin }: EventCardProps) {
             if (result.error) {
                 showToast('error', result.error);
             } else {
+                // Optimistic UI update
+                setLocalAssignments(prev => prev.filter(a => a.id !== assignmentId));
                 showToast('success', `Vaga de ${FUNCTION_LABELS[functionType]} liberada.`);
             }
             setActiveAction(null);
@@ -75,7 +91,7 @@ export function EventCard({ event, currentUserId, isAdmin }: EventCardProps) {
     };
 
     const getAssignmentsForFunction = (functionType: FunctionType): Assignment[] => {
-        return event.assignments?.filter(a => a.function_type === functionType) || [];
+        return localAssignments.filter(a => a.function_type === functionType);
     };
 
     const getSlotLimit = (functionType: FunctionType): number => {

@@ -1,8 +1,24 @@
 import { createClient } from '@/lib/supabase/server';
 import { Users, Shield, User as UserIcon } from 'lucide-react';
+import { redirect } from 'next/navigation';
 
 export default async function MembrosPage() {
     const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        redirect('/login');
+    }
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') {
+        redirect('/dashboard');
+    }
 
     const { data: members } = await supabase
         .from('profiles')
