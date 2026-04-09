@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
-import { Radio, Loader2, Lock, Mail } from 'lucide-react';
+import { Radio, Loader2, Lock, Mail, EyeOff, User, ShieldCheck, Network, Target, Shield } from 'lucide-react';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -34,98 +34,121 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="fixed inset-0 bg-black text-white selection:bg-blue-600/30 overflow-hidden flex flex-col items-center justify-center p-4">
-            {/* Cinematic Atmosphere */}
-            <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-                <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-full max-w-[800px] h-full bg-blue-600/[0.03] rounded-full blur-[120px]" />
+        <div className="min-h-screen bg-[#02040a] text-white selection:bg-blue-600/30 overflow-y-auto flex flex-col items-center justify-center px-10 py-12 relative">
+
+            {/* Ambient Background Glow */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[80%] h-1/2 bg-blue-600/[0.03] rounded-full blur-[120px]" />
             </div>
 
-            <div className="w-full max-w-[380px] md:max-w-[440px] flex flex-col items-center z-10 transition-all duration-500">
-                {/* Branding Header */}
-                <div className="flex flex-col items-center mb-10 w-full animate-in">
-                    <div className="relative mb-10">
-                        <div className="w-16 h-16 md:w-24 md:h-24 rounded-[28px] md:rounded-[36px] bg-blue-600 flex items-center justify-center shadow-[0_20px_40px_rgba(0,0,255,0.3)] border border-white/10 relative z-10">
-                            <Radio className="text-white w-10 h-10 md:w-14 md:h-14" />
+            {/* Content Wrapper */}
+            <div className="w-[90%] md:w-full max-w-[500px] flex flex-col items-center z-10 animate-in fade-in duration-1000">
+
+                {/* Branding Section (Icon + Logo) */}
+                <div className="flex flex-col items-center w-full">
+                    {/* Icon with Glow */}
+                    <div className="relative mb-8 group">
+                        <div className="absolute inset-0 bg-blue-600/20 blur-[40px] rounded-full group-hover:bg-blue-600/30 transition-all duration-700" />
+                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-[28px] bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-[0_0_30px_rgba(0,0,255,0.3)] relative z-10 border border-white/10 transition-transform duration-500 hover:scale-105">
+                            <Radio className="text-white w-8 h-8 md:w-10 md:h-10" />
                         </div>
                     </div>
 
-                    <div className="w-full flex items-center justify-center py-12">
+                    {/* Logo Image with Blend Mode Fix */}
+                    <div className="w-full flex items-center justify-center">
                         <img
                             src="/logo.jpg"
                             alt="PASCOM"
                             width={300}
                             height={90}
-                            className="max-h-14 md:max-h-20 w-auto filter grayscale brightness-125 contrast-125 transition-all duration-700"
+                            className="max-h-16 md:max-h-24 w-auto brightness-110 contrast-125 transition-opacity duration-700"
                             style={{
                                 mixBlendMode: 'screen',
-                                maskImage: 'linear-gradient(to bottom, transparent, black 5%, black 95%, transparent), linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
+                                filter: 'grayscale(0.1)',
+                                maskImage: 'linear-gradient(to bottom, transparent, black 15%, black 85%, transparent), linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
                                 maskComposite: 'intersect'
                             }}
                         />
                     </div>
                 </div>
 
-                {/* Form Card */}
-                <div className="w-full bg-[#0a0a0f]/80 backdrop-blur-3xl rounded-[48px] p-8 md:p-12 shadow-[0_40px_100px_rgba(0,0,0,0.8)] relative overflow-hidden animate-in" style={{ animationDelay: '0.1s' }}>
-                    <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
+                {/* --- FORCED SPACER BLOCK --- */}
+                <div className="h-10 md:h-10 w-full pointer-events-none" aria-hidden="true" />
+                {/* --------------------------- */}
 
-                    <form onSubmit={handleLogin} className="flex flex-col gap-y-14 md:gap-y-20">
-                        <div className="flex flex-col gap-y-12 md:gap-y-16">
-                            <div className="flex items-center h-[72px] md:h-[84px] bg-white/[0.04] rounded-[28px] md:rounded-[32px] border border-white/[0.03] focus-within:bg-white/[0.07] transition-all duration-300 group/input">
-                                <div className="w-16 md:w-24 flex items-center justify-center text-zinc-600 group-focus-within/input:text-blue-500 transition-colors">
-                                    <Mail className="w-5 h-5 md:w-6 md:h-6" />
+                {/* Form Section */}
+                <div className="w-full backdrop-blur-sm md:rounded-[40px] p-2">
+                    <div className="rounded-[30px] md:rounded-[38px] p-6 md:p-10">
+                        <form onSubmit={handleLogin} className="flex flex-col gap-y-6 md:gap-y-8">
+
+                            {/* Credential Field */}
+                            <div className="flex flex-col gap-y-3">
+                                <div className="flex items-center h-[56px] md:h-[64px] bg-white/[0.03] rounded-2xl md:rounded-[22px] border border-white/[0.05] focus-within:border-blue-500/40 focus-within:bg-white/[0.05] transition-all duration-300 px-4 group/input">
+                                    <User className="w-5 h-5 text-zinc-500 group-focus-within/input:text-blue-500 transition-colors" />
+                                    <input
+                                        type="email"
+                                        placeholder="Digite sua credencial"
+                                        className="flex-1 h-full bg-transparent text-white text-sm md:text-base outline-none placeholder:text-zinc-600 px-3 font-medium tracking-wide"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                    />
                                 </div>
-                                <input
-                                    type="email"
-                                    placeholder="Credencial"
-                                    className="flex-1 h-full bg-transparent pr-8 text-white text-base md:text-lg outline-none placeholder:text-zinc-600 font-medium tracking-wide"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                />
                             </div>
 
-                            <div className="flex items-center h-[72px] md:h-[84px] bg-white/[0.04] rounded-[28px] md:rounded-[32px] border border-white/[0.03] focus-within:bg-white/[0.07] transition-all duration-300 group/input">
-                                <div className="w-16 md:w-24 flex items-center justify-center text-zinc-600 group-focus-within/input:text-blue-500 transition-colors">
-                                    <Lock className="w-5 h-5 md:w-6 md:h-6" />
+                            {/* Password Field */}
+                            <div className="flex flex-col gap-y-3">
+                                <div className="flex items-center h-[56px] md:h-[64px] bg-white/[0.03] rounded-2xl md:rounded-[22px] border border-white/[0.05] focus-within:border-blue-500/40 focus-within:bg-white/[0.05] transition-all duration-300 px-4 group/input">
+                                    <Lock className="w-5 h-5 text-zinc-500 group-focus-within/input:text-blue-500 transition-colors" />
+                                    <input
+                                        type="password"
+                                        placeholder="••••••••"
+                                        className="flex-1 h-full bg-transparent text-white text-lg outline-none placeholder:text-zinc-600 px-3 font-medium tracking-widest pt-1"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                    />
+                                    <EyeOff className="w-4 h-4 text-zinc-600 cursor-pointer hover:text-zinc-400 transition-colors" />
                                 </div>
-                                <input
-                                    type="password"
-                                    placeholder="Senha"
-                                    className="flex-1 h-full bg-transparent pr-8 text-white text-base md:text-lg outline-none placeholder:text-zinc-600 font-medium tracking-wide"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    required
-                                />
                             </div>
-                        </div>
 
-                        {error && (
-                            <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold text-center">
-                                {error}
-                            </div>
-                        )}
+                            {error && (
+                                <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold text-center animate-shake">
+                                    {error}
+                                </div>
+                            )}
 
-                        <div className="pt-2">
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-5 md:py-6 rounded-[28px] md:rounded-[32px] text-[11px] md:text-sm uppercase tracking-[0.35em] transition-all transform active:scale-[0.98] shadow-[0_20px_40px_rgba(0,0,255,0.3)] flex items-center justify-center min-h-[60px] md:min-h-[72px]"
+                                className="w-full mt-2 bg-gradient-to-r from-blue-700 to-indigo-700 hover:from-blue-600 hover:to-indigo-600 text-white font-black h-[56px] md:h-[64px] rounded-2xl md:rounded-[24px] text-[12px] md:text-[13px] uppercase tracking-[0.3em] transition-all duration-300 transform active:scale-[0.98] shadow-[0_15px_30px_rgba(0,0,255,0.2)] hover:shadow-[0_20px_40px_rgba(0,0,255,0.3)] flex items-center justify-center"
                             >
-                                {loading ? <Loader2 className="animate-spin" size={24} /> : 'AUTENTICAR'}
+                                {loading ? <Loader2 className="animate-spin" size={20} /> : 'Autenticar no Sistema'}
                             </button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
 
-                {/* Branding Footer */}
-                <div className="mt-12 text-center space-y-2 opacity-50 animate-in" style={{ animationDelay: '0.2s' }}>
-                    <p className="text-[10px] md:text-[12px] font-bold text-zinc-500 tracking-[0.2em] uppercase leading-tight">
-                        SANTUÁRIO DIOCESANO <br />
-                        <span className="text-blue-500">NOSSA SENHORA DA NATIVIDADE</span>
+                {/* --- BOTTOM SPACER --- */}
+                <div className="h-12 md:h-20" aria-hidden="true" />
+
+                {/* Parish Branding */}
+                <div className="mt-auto text-center pb-8 border-b border-white/5 w-full max-w-[300px]">
+                    <p className="text-[8px] md:text-[10px] font-black text-zinc-200 tracking-wide uppercase leading-tight">
+                        Paróquia Santuario Diocesano Nossa Senhora da Natividade
                     </p>
+                    <div className="flex items-center justify-center gap-2 mt-2 opacity-50">
+                        <Shield className="w-3 h-3 text-blue-500" />
+                        <p className="text-[9px] font-bold text-zinc-500 tracking-[0.2em] uppercase">
+                            Ambiente Restrito e Pastoral
+                        </p>
+                    </div>
                 </div>
+
             </div>
+
+            {/* Scroll Indicator at bottom */}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/[0.05] rounded-full md:hidden" />
         </div>
     );
 }
