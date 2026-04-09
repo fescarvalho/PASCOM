@@ -260,21 +260,23 @@ export async function registerMember(formData: {
         return { error: `Erro ao criar usuário: ${authError.message}` };
     }
 
-    // 2. Create Profile
+    // 2. Create or Update Profile (upsert prevents conflicts if a pg trigger automatically creates the profile)
     const { error: profileError } = await adminClient
         .from('profiles')
-        .insert({
+        .upsert({
             id: authUser.user.id,
             full_name: formData.full_name,
             email: formData.email,
             role: formData.role
+        }, {
+            onConflict: 'id'
         });
 
     if (profileError) {
         console.error('Profile Error:', profileError);
         // Clean up auth user if profile fail
         await adminClient.auth.admin.deleteUser(authUser.user.id);
-        return { error: 'Erro ao criar perfil do usuário.' };
+        return { error: `Erro ao associar perfil: ${profileError.message}` };
     }
 
     revalidatePath('/admin');
