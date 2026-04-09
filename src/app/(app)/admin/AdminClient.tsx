@@ -191,7 +191,7 @@ export function AdminClient({ profiles }: AdminClientProps) {
             {/* Main Content Area */}
             <main className="main-content flex-1 flex flex-col relative w-full max-w-full overflow-hidden">
                 {/* TopAppBar */}
-                <header className="sticky top-0 right-0 w-full min-h-[80px] bg-surface-dim/60 backdrop-blur-xl flex flex-col sm:flex-row justify-center sm:justify-between items-center px-4 sm:px-6 md:px-10 z-40 border-b border-outline-variant/5 gap-4 py-4 sm:py-0">
+                <header className="sticky top-0 right-0 w-full min-h-[80px] bg-surface-dim/60 backdrop-blur-xl flex flex-col md:flex-row justify-center md:justify-between items-center px-4 md:px-10 z-40 border-b border-outline-variant/5 gap-4 py-4 md:py-0">
                     <div className="flex bg-surface-container-low p-1 rounded-full border border-outline-variant/10 shadow-inner overflow-hidden">
                         <button onClick={() => setActiveTab('events')} className={`px-4 sm:px-6 md:px-8 py-2 md:py-3 rounded-full text-[9px] sm:text-[10px] md:text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'events' ? 'bg-surface-container-highest text-primary shadow-sm border border-primary/10' : 'text-gray-500 hover:text-white'}`}>
                             Escalas
@@ -218,12 +218,12 @@ export function AdminClient({ profiles }: AdminClientProps) {
                         <>
                             {/* Hero Header */}
                             <section className="mb-12">
-                                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-                                    <div>
-                                        <h2 className="text-5xl md:text-7xl font-black font-manrope tracking-tighter text-white mb-2 leading-none">Escalas do Grupo</h2>
-                                        <div className="flex items-center gap-4">
+                                <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-6 text-center md:text-left">
+                                    <div className="flex flex-col items-center md:items-start w-full md:w-auto">
+                                        <h2 className="text-5xl md:text-7xl font-black font-manrope tracking-tighter text-white mb-2 leading-none w-full">Escalas do Grupo</h2>
+                                        <div className="flex items-center justify-center md:justify-start gap-4 flex-wrap w-full">
                                             <span className="text-primary font-bold tracking-[0.2em] uppercase text-[10px]">{format(new Date(), "MMMM yyyy", { locale: ptBR })}</span>
-                                            <div className="h-px w-24 bg-surface-container-highest"></div>
+                                            <div className="h-px w-12 md:w-24 bg-surface-container-highest"></div>
                                             <span className="text-on-surface-variant text-xs font-medium">Organizando o serviço da juventude</span>
                                         </div>
                                     </div>
@@ -366,39 +366,31 @@ export function AdminClient({ profiles }: AdminClientProps) {
                                                 <span className="text-[9px] uppercase font-bold tracking-widest">{format(parseISO(event.event_date), "MMM")}</span>
                                             </div>
 
-                                            <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-6 items-center w-full text-center md:text-left">
-                                                <div className="md:col-span-1">
+                                            <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-6 items-center w-full text-center md:text-left">
+                                                <div className="md:col-span-3 lg:col-span-3">
                                                     <h4 className="font-black text-white text-base tracking-tight truncate group-hover:text-primary transition-colors">{event.title}</h4>
                                                     <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">{event.event_time.slice(0, 5)}h</p>
                                                 </div>
 
-                                                <div className="flex flex-wrap justify-center md:justify-start gap-2">
-                                                    {event.assignments?.slice(0, 2).map((as: any) => (
-                                                        <span key={as.id} className="inline-flex items-center gap-2 px-3 py-1 bg-surface-container-highest rounded-full text-[9px] font-black uppercase tracking-wider text-primary border border-primary/10 overflow-hidden max-w-[150px]">
-                                                            {as.function_type === 'live' && <Music size={12} className="shrink-0" />}
-                                                            {as.function_type === 'fotos' && <Book size={12} className="shrink-0" />}
-                                                            {as.function_type === 'videos' && <Video size={12} className="shrink-0" />}
-                                                            <span className="truncate">{FUNCTION_LABELS[as.function_type as FunctionType] || as.function_type}</span>
-                                                        </span>
-                                                    ))}
-                                                    {event.assignments?.length > 2 && (
-                                                        <span className="text-[9px] font-bold text-gray-500 self-center">+{event.assignments.length - 2}</span>
+                                                <div className="md:col-span-6 lg:col-span-6 flex flex-wrap justify-center md:justify-start gap-2">
+                                                    {event.assignments?.length > 0 ? event.assignments.map((as: any) => (
+                                                        <div key={as.id} className="flex items-center gap-2 bg-surface-container-highest px-3 py-1.5 rounded-full border border-outline-variant/10 shadow-sm hover:border-primary/30 transition-colors">
+                                                            <div className="w-5 h-5 rounded-full bg-surface-container overflow-hidden flex flex-shrink-0 items-center justify-center text-[9px] font-black text-white border border-outline-variant/20">
+                                                                {as.profiles?.avatar_url ? (
+                                                                    <img src={as.profiles.avatar_url} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    as.profiles?.full_name?.charAt(0) || '?'
+                                                                )}
+                                                            </div>
+                                                            <span className="text-xs font-bold text-white truncate max-w-[100px] lg:max-w-[140px]">{as.profiles?.full_name || 'Sem nome'}</span>
+                                                            <span className="text-[9px] font-black uppercase text-primary tracking-widest bg-primary/10 px-2 py-0.5 rounded-md">{FUNCTION_LABELS[as.function_type as FunctionType] || as.function_type}</span>
+                                                        </div>
+                                                    )) : (
+                                                        <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Nenhuma equipe escalada</span>
                                                     )}
                                                 </div>
 
-                                                <div className="flex -space-x-3 overflow-hidden justify-center md:justify-start">
-                                                    {event.assignments?.map((as: any) => (
-                                                        <div key={as.id} className="flex-shrink-0 h-10 w-10 rounded-full ring-4 ring-surface-container bg-surface-container-highest flex items-center justify-center text-[10px] font-black text-gray-400 border border-outline-variant/20 overflow-hidden">
-                                                            {as.profiles?.avatar_url ? (
-                                                                <img src={as.profiles.avatar_url} className="w-full h-full object-cover" />
-                                                            ) : (
-                                                                as.profiles?.full_name?.charAt(0)
-                                                            )}
-                                                        </div>
-                                                    ))}
-                                                </div>
-
-                                                <div className="flex justify-end items-center gap-4">
+                                                <div className="md:col-span-3 lg:col-span-3 flex justify-center md:justify-end items-center gap-4">
                                                     <div className="flex items-center gap-2 text-secondary-dim">
                                                         <div className="w-2 h-2 rounded-full bg-secondary-dim shadow-[0_0_8px_#9093ff] animate-pulse"></div>
                                                         <span className="text-[10px] font-black uppercase tracking-[0.2em]">Ativo</span>
@@ -419,12 +411,12 @@ export function AdminClient({ profiles }: AdminClientProps) {
                     ) : (
                         <div className="animate-in fade-in slide-in-from-bottom-6 duration-700">
                             <section className="mb-12">
-                                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
-                                    <div>
-                                        <h2 className="text-5xl md:text-7xl font-black font-manrope tracking-tighter text-white mb-2 leading-none">Membros Pascom</h2>
-                                        <div className="flex items-center gap-4">
+                                <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-6 text-center md:text-left">
+                                    <div className="flex flex-col items-center md:items-start w-full md:w-auto">
+                                        <h2 className="text-5xl md:text-7xl font-black font-manrope tracking-tighter text-white mb-2 leading-none w-full">Membros Pascom</h2>
+                                        <div className="flex items-center justify-center md:justify-start gap-4 flex-wrap w-full">
                                             <span className="text-primary font-bold tracking-[0.2em] uppercase text-[10px]">Time de Elite</span>
-                                            <div className="h-px w-24 bg-surface-container-highest"></div>
+                                            <div className="h-px w-12 md:w-24 bg-surface-container-highest"></div>
                                             <span className="text-on-surface-variant text-xs font-medium">Gestão de voluntários e acessos</span>
                                         </div>
                                     </div>
