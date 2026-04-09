@@ -311,14 +311,14 @@ export function AdminClient({ profiles }: AdminClientProps) {
                                             <p className="text-4xl md:text-5xl font-black font-manrope text-white mb-1">
                                                 {events.reduce((acc, e) => acc + (e.assignments?.length || 0), 0)}
                                             </p>
-                                            <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest truncate">Confirmados</p>
+                                            <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest leading-tight">Confirmados</p>
                                         </div>
                                     </div>
                                     <div className="bg-surface-container-low rounded-3xl p-5 md:p-8 flex flex-col justify-between border border-outline-variant/10 group hover:bg-surface-container-high transition-all">
                                         <Clock3 size={32} className="text-tertiary group-hover:scale-110 transition-transform shrink-0" />
                                         <div className="mt-4">
                                             <p className="text-4xl md:text-5xl font-black font-manrope text-white mb-1">07</p>
-                                            <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest truncate">Pendentes</p>
+                                            <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest leading-tight">Pendentes</p>
                                         </div>
                                     </div>
                                     <button
@@ -341,7 +341,7 @@ export function AdminClient({ profiles }: AdminClientProps) {
                                             <Filter size={16} />
                                             Filtrar Função
                                         </button>
-                                        <button className="flex items-center justify-center gap-2 px-6 py-2.5 bg-surface-container-low rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-surface-container-high transition-all border border-outline-variant/10 shadow-sm flex-1 md:flex-none">
+                                        <button onClick={() => window.print()} className="flex items-center justify-center gap-2 px-6 py-2.5 bg-surface-container-low rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-surface-container-high transition-all border border-outline-variant/10 shadow-sm flex-1 md:flex-none">
                                             <Share2 size={16} />
                                             Exportar PDF
                                         </button>
