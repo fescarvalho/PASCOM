@@ -39,7 +39,6 @@ export function AppShell({ profile, children }: AppShellProps) {
     const navItems = [
         { href: '/dashboard', label: 'Escalas', icon: CalendarDays },
         ...(isAdmin ? [
-            { href: '/membros', label: 'Membros', icon: Users },
             { href: '/admin', label: 'Painel Admin', icon: Settings }
         ] : []),
     ];
@@ -177,10 +176,7 @@ export function AppShell({ profile, children }: AppShellProps) {
                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                             <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Ativo</span>
                         </div>
-                        <button className="p-2.5 md:p-3 bg-zinc-900 rounded-xl md:rounded-2xl text-zinc-400 hover:text-primary transition-all relative group">
-                            <Bell size={20} className="md:size-[22px] group-hover:rotate-12" />
-                            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-primary rounded-full border-2 border-black" />
-                        </button>
+
                     </div>
                 </header>
 

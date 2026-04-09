@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { redirect } from 'next/navigation';
 import { AdminClient } from './AdminClient';
 
@@ -16,7 +17,9 @@ export default async function AdminPage() {
         redirect('/dashboard');
     }
 
-    const { data: allMembers } = await supabase
+    const adminSupabase = createAdminClient();
+
+    const { data: allMembers } = await adminSupabase
         .from('profiles')
         .select('*')
         .order('full_name', { ascending: true });

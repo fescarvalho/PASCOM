@@ -227,12 +227,6 @@ export function AdminClient({ profiles }: AdminClientProps) {
                                             <span className="text-on-surface-variant text-xs font-medium">Organizando o serviço da juventude</span>
                                         </div>
                                     </div>
-
-                                    <div className="flex bg-surface-container-low p-1.5 rounded-full border border-outline-variant/10 shadow-inner overflow-x-auto no-scrollbar max-w-full">
-                                        <button onClick={() => setViewFilter('semana')} className={`whitespace-nowrap px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${viewFilter === 'semana' ? 'bg-surface-container-highest text-primary shadow-sm border border-primary/10' : 'text-gray-500 hover:text-white'}`}>Semana</button>
-                                        <button onClick={() => setViewFilter('mes')} className={`whitespace-nowrap px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${viewFilter === 'mes' ? 'bg-surface-container-highest text-primary shadow-sm border border-primary/10' : 'text-gray-500 hover:text-white'}`}>Mês</button>
-                                        <button onClick={() => setViewFilter('equipes')} className={`whitespace-nowrap px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${viewFilter === 'equipes' ? 'bg-surface-container-highest text-primary shadow-sm border border-primary/10' : 'text-gray-500 hover:text-white'}`}>Equipes</button>
-                                    </div>
                                 </div>
                             </section>
 

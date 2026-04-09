@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { Users, Shield, User as UserIcon } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
@@ -20,7 +21,9 @@ export default async function MembrosPage() {
         redirect('/dashboard');
     }
 
-    const { data: members } = await supabase
+    const adminSupabase = createAdminClient();
+
+    const { data: members } = await adminSupabase
         .from('profiles')
         .select('*')
         .order('full_name', { ascending: true });
