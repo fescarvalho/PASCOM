@@ -58,6 +58,7 @@ export default function LoginPage() {
                     <div className="w-full flex items-center justify-center">
                         <img
                             src="/logo.jpg"
+
                             alt="PASCOM"
                             width={300}
                             height={90}
@@ -65,7 +66,7 @@ export default function LoginPage() {
                             style={{
                                 mixBlendMode: 'screen',
                                 filter: 'grayscale(0.1)',
-                                maskImage: 'linear-gradient(to bottom, transparent, black 15%, black 85%, transparent), linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
+                                maskImage: 'linear-gradient(to bottom, transparent, blue 50%, blue 50%, transparent), linear-gradient(to right, transparent, blue 5%, blue 95%, transparent)',
                                 maskComposite: 'intersect'
                             }}
                         />
@@ -83,7 +84,7 @@ export default function LoginPage() {
 
                             {/* Credential Field */}
                             <div className="flex flex-col gap-y-3">
-                                <div className="flex items-center h-[56px] md:h-[64px] bg-white/[0.03] rounded-2xl md:rounded-[22px] border border-white/[0.05] focus-within:border-blue-500/40 focus-within:bg-white/[0.05] transition-all duration-300 px-4 group/input">
+                                <div className="flex items-center h-[56px] md:h-[64px] bg-white/[0.03] rounded-2xl md:rounded-[22px] border border-white/[0.05] focus-within:border-blue-500/40 focus-within:bg-white/[0.05] transition-all duration-300 px-12 group/input">
                                     <User className="w-5 h-5 text-zinc-500 group-focus-within/input:text-blue-500 transition-colors" />
                                     <input
                                         type="email"
@@ -98,7 +99,7 @@ export default function LoginPage() {
 
                             {/* Password Field */}
                             <div className="flex flex-col gap-y-3">
-                                <div className="flex items-center h-[56px] md:h-[64px] bg-white/[0.03] rounded-2xl md:rounded-[22px] border border-white/[0.05] focus-within:border-blue-500/40 focus-within:bg-white/[0.05] transition-all duration-300 px-4 group/input">
+                                <div className="flex items-center h-[56px] md:h-[64px] bg-white/[0.03] rounded-2xl md:rounded-[22px] border border-white/[0.05] focus-within:border-blue-500/40 focus-within:bg-white/[0.05] transition-all duration-300 px-12 group/input">
                                     <Lock className="w-5 h-5 text-zinc-500 group-focus-within/input:text-blue-500 transition-colors" />
                                     <input
                                         type="password"
