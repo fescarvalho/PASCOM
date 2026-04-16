@@ -62,7 +62,7 @@ export default function LoginPage() {
                             alt="PASCOM"
                             width={300}
                             height={90}
-                            className="max-h-20 md:max-h-32 w-auto brightness-110 contrast-125 transition-opacity duration-700"
+                            className="max-h-16 md:max-h-24 w-auto brightness-110 contrast-125 transition-opacity duration-700"
                             style={{
                                 mixBlendMode: 'screen',
                                 filter: 'grayscale(0.1)',
@@ -84,12 +84,12 @@ export default function LoginPage() {
 
                             {/* Credential Field */}
                             <div className="flex flex-col gap-y-3">
-                                <div className="flex items-center h-[56px] md:h-[64px] bg-white/[0.03] rounded-2xl md:rounded-[22px] border border-white/[0.08] focus-within:border-blue-500/40 focus-within:bg-white/[0.06] transition-all duration-300 px-9 md:px-10 group/input gap-x-5">
+                                <div className="flex items-center h-[56px] md:h-[64px] bg-white/[0.03] rounded-2xl md:rounded-[22px] border border-white/[0.08] focus-within:border-blue-500/40 focus-within:bg-white/[0.06] transition-all duration-300 px-5 md:px-8 group/input gap-x-3 md:gap-x-4">
                                     <User className="w-5 h-5 text-zinc-500 group-focus-within/input:text-blue-500 transition-colors shrink-0" />
                                     <input
                                         type="email"
                                         placeholder="Digite sua credencial"
-                                        className="flex-1 h-full bg-transparent text-white text-base outline-none placeholder:text-zinc-600 font-medium tracking-wide"
+                                        className="flex-1 h-full bg-transparent text-white text-sm md:text-base outline-none placeholder:text-zinc-600 font-medium tracking-wide w-full"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
@@ -99,12 +99,12 @@ export default function LoginPage() {
 
                             {/* Password Field */}
                             <div className="flex flex-col gap-y-3">
-                                <div className="flex items-center h-[56px] md:h-[64px] bg-white/[0.03] rounded-2xl md:rounded-[22px] border border-white/[0.08] focus-within:border-blue-500/40 focus-within:bg-white/[0.06] transition-all duration-300 px-9 md:px-10 group/input gap-x-5">
+                                <div className="flex items-center h-[56px] md:h-[64px] bg-white/[0.03] rounded-2xl md:rounded-[22px] border border-white/[0.08] focus-within:border-blue-500/40 focus-within:bg-white/[0.06] transition-all duration-300 px-5 md:px-8 group/input gap-x-3 md:gap-x-4">
                                     <Lock className="w-5 h-5 text-zinc-500 group-focus-within/input:text-blue-500 transition-colors shrink-0" />
                                     <input
                                         type="password"
                                         placeholder="••••••••"
-                                        className="flex-1 h-full bg-transparent text-white text-xl outline-none placeholder:text-zinc-600 font-medium tracking-[0.4em] pt-1"
+                                        className="flex-1 h-full bg-transparent text-white text-lg md:text-xl outline-none placeholder:text-zinc-600 font-medium md:tracking-[0.4em] tracking-[0.2em] pt-1"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         required
@@ -142,7 +142,7 @@ export default function LoginPage() {
 
                 {/* Parish Branding */}
                 <div className="mt-auto text-center pb-8 border-b border-white/5 w-full max-w-[300px]">
-                    <p className="text-[11px] md:text-[13px] font-black text-zinc-200 tracking-wide uppercase leading-tight">
+                    <p className="text-[9px] md:text-[11px] font-black text-zinc-200 tracking-wide uppercase leading-tight">
                         Paróquia Santuario Diocesano Nossa Senhora da Natividade
                     </p>
                     <div className="flex items-center justify-center gap-2 mt-2 opacity-50">
