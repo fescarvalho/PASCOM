@@ -197,9 +197,9 @@ export function AdminClient({ profiles }: AdminClientProps) {
             const opt = {
                 margin: 10,
                 filename: `Escala_Pascom_${format(new Date(), "MMM_yyyy")}.pdf`,
-                image: { type: 'jpeg', quality: 1.0 },
+                image: { type: 'jpeg' as const, quality: 1.0 },
                 html2canvas: { scale: 2, useCORS: true, logging: false },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
             };
 
             await html2pdf().set(opt).from(element).save();
@@ -216,9 +216,9 @@ export function AdminClient({ profiles }: AdminClientProps) {
     const nextEvent = events[0];
 
     return (
-        <div className="flex min-h-screen bg-surface-dim font-body selection:bg-primary/30 w-full">
+        <div className="flex min-h-screen bg-surface-dim font-inter selection:bg-primary/30 w-full">
             {/* Main Content Area */}
-            <main className="main-content flex-1 flex flex-col relative w-full max-w-full overflow-hidden">
+            <main className="flex-1 flex flex-col relative w-full max-w-full overflow-hidden">
                 {/* TopAppBar */}
                 <header className="sticky top-0 right-0 w-full min-h-[80px] bg-surface-dim/60 backdrop-blur-xl flex flex-col md:flex-row justify-center md:justify-between items-center px-4 md:px-10 z-40 border-b border-outline-variant/5 gap-4 py-4 md:py-0">
                     <div className="flex bg-surface-container-low p-1 rounded-full border border-outline-variant/10 shadow-inner overflow-hidden">
