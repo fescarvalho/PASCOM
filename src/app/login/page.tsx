@@ -34,7 +34,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#02040a] text-white selection:bg-blue-600/30 overflow-y-auto flex flex-col items-center justify-center px-10 py-12 relative">
+        <div className="min-h-screen bg-[#02040a] text-white selection:bg-blue-600/30 overflow-y-auto flex flex-col items-center justify-center px-4 md:px-10 py-12 relative">
 
             {/* Ambient Background Glow */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -42,7 +42,7 @@ export default function LoginPage() {
             </div>
 
             {/* Content Wrapper */}
-            <div className="w-[90%] md:w-full max-w-[500px] flex flex-col items-center z-10 animate-in fade-in duration-1000">
+            <div className="w-full sm:w-[90%] md:w-full max-w-[500px] flex flex-col items-center z-10 animate-in fade-in duration-1000">
 
                 {/* Branding Section (Icon + Logo) */}
                 <div className="flex flex-col items-center w-full">
@@ -79,12 +79,12 @@ export default function LoginPage() {
 
                 {/* Form Section */}
                 <div className="w-full backdrop-blur-sm md:rounded-[40px] p-2">
-                    <div className="rounded-[30px] md:rounded-[38px] p-6 md:p-10">
+                    <div className="rounded-[30px] md:rounded-[38px] p-4 md:p-10">
                         <form onSubmit={handleLogin} className="flex flex-col gap-y-6 md:gap-y-8">
 
                             {/* Credential Field */}
                             <div className="flex flex-col gap-y-3">
-                                <div className="flex items-center h-[56px] md:h-[64px] bg-white/[0.03] rounded-2xl md:rounded-[22px] border border-white/[0.08] focus-within:border-blue-500/40 focus-within:bg-white/[0.06] transition-all duration-300 px-5 md:px-8 group/input gap-x-3 md:gap-x-4">
+                                <div className="flex items-center h-[56px] md:h-[64px] bg-white/[0.03] rounded-2xl md:rounded-[22px] border border-white/[0.08] focus-within:border-blue-500/40 focus-within:bg-white/[0.06] transition-all duration-300 px-4 md:px-8 group/input gap-x-3 md:gap-x-4">
                                     <User className="w-5 h-5 text-zinc-500 group-focus-within/input:text-blue-500 transition-colors shrink-0" />
                                     <input
                                         type="email"
@@ -99,7 +99,7 @@ export default function LoginPage() {
 
                             {/* Password Field */}
                             <div className="flex flex-col gap-y-3">
-                                <div className="flex items-center h-[56px] md:h-[64px] bg-white/[0.03] rounded-2xl md:rounded-[22px] border border-white/[0.08] focus-within:border-blue-500/40 focus-within:bg-white/[0.06] transition-all duration-300 px-5 md:px-8 group/input gap-x-3 md:gap-x-4">
+                                <div className="flex items-center h-[56px] md:h-[64px] bg-white/[0.03] rounded-2xl md:rounded-[22px] border border-white/[0.08] focus-within:border-blue-500/40 focus-within:bg-white/[0.06] transition-all duration-300 px-4 md:px-8 group/input gap-x-3 md:gap-x-4">
                                     <Lock className="w-5 h-5 text-zinc-500 group-focus-within/input:text-blue-500 transition-colors shrink-0" />
                                     <input
                                         type="password"
