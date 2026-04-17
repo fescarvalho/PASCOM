@@ -282,7 +282,7 @@ export function AdminClient({ profiles, sysFunctions }: AdminClientProps) {
 
             element.style.display = 'block';
 
-            const opt = {
+            const pdfOptions = {
                 margin: 0,
                 filename: `Escala_Pascom_${format(new Date(), "MMM_yyyy")}.pdf`,
                 image: { type: 'jpeg' as const, quality: 1.0 },
@@ -295,7 +295,8 @@ export function AdminClient({ profiles, sysFunctions }: AdminClientProps) {
                 }
             };
 
-            await (html2pdf() as any).set(opt).from(element).save();
+            // @ts-ignore
+            await html2pdf().set(pdfOptions).from(element).save();
         } catch (error) {
             console.error('PDF error:', error);
             showToast('Erro ao exportar PDF', 'error');
