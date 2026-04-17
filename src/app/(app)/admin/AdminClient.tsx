@@ -9,6 +9,7 @@ import {
     generateRecurringEvents,
     registerMember,
     deleteMember,
+    updateMemberRole,
 } from './actions';
 import { FUNCTION_LABELS } from '@/types';
 import type { FunctionType } from '@/types';
@@ -172,6 +173,20 @@ export function AdminClient({ profiles }: AdminClientProps) {
         }
     };
 
+    const handleUpdateRole = async (id: string, currentRole: string) => {
+        const newRole = currentRole === 'admin' ? 'member' : 'admin';
+        if (!confirm(`Tem certeza que deseja alterar a permissão deste usuário para ${newRole.toUpperCase()}?`)) return;
+        
+        setLoading(true);
+        const res = await updateMemberRole(id, newRole);
+        if (res.success) {
+            showToast(`Permissão alterada para ${newRole}.`, 'success');
+        } else {
+            showToast(res.error || 'Erro ao alterar permissão.', 'error');
+        }
+        setLoading(false);
+    };
+
     const handleDeleteMember = async (id: string) => {
         if (!confirm('Tem certeza que deseja remover este membro definitivamente?')) return;
         setLoading(true);
@@ -195,11 +210,11 @@ export function AdminClient({ profiles }: AdminClientProps) {
             element.style.display = 'block';
 
             const opt = {
-                margin: 10,
+                margin: 0,
                 filename: `Escala_Pascom_${format(new Date(), "MMM_yyyy")}.pdf`,
                 image: { type: 'jpeg' as const, quality: 1.0 },
-                html2canvas: { scale: 2, useCORS: true, logging: false },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
+                html2canvas: { scale: 2, useCORS: true, logging: false, width: 1123 },
+                jsPDF: { unit: 'px', format: [1587, 1123], orientation: 'landscape' as const, hotfixes: ['px_scaling'] }
             };
 
             await html2pdf().set(opt).from(element).save();
@@ -242,26 +257,26 @@ export function AdminClient({ profiles }: AdminClientProps) {
                     </div>
                 </header>
 
-                <div className="flex-1 p-10 max-w-7xl">
+                <div className="flex-1 p-4 sm:p-6 lg:p-10 w-full max-w-7xl">
                     {activeTab === 'events' ? (
                         <>
                             {/* Hero Header */}
-                            <section className="mb-12">
-                                <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-6 text-center md:text-left">
-                                    <div className="flex flex-col items-center md:items-start w-full md:w-auto">
-                                        <h2 className="text-5xl md:text-7xl font-black font-manrope tracking-tighter text-white mb-2 leading-none w-full">Escalas do Grupo</h2>
-                                        <div className="flex items-center justify-center md:justify-start gap-4 flex-wrap w-full">
+                            <section className="mb-6 sm:mb-10 lg:mb-12">
+                                <div className="flex flex-col gap-4">
+                                    <div className="flex flex-col items-start w-full">
+                                        <h2 className="text-3xl sm:text-5xl lg:text-7xl font-black font-manrope tracking-tighter text-white mb-2 leading-none">Escalas do Grupo</h2>
+                                        <div className="flex items-center gap-3 flex-wrap">
                                             <span className="text-primary font-bold tracking-[0.2em] uppercase text-[10px]">{format(new Date(), "MMMM yyyy", { locale: ptBR })}</span>
-                                            <div className="h-px w-12 md:w-24 bg-surface-container-highest"></div>
+                                            <div className="h-px w-12 bg-surface-container-highest"></div>
                                             <span className="text-on-surface-variant text-xs font-medium">Organizando o serviço da juventude</span>
                                         </div>
                                     </div>
                                 </div>
                             </section>
 
-                            <div className="grid grid-cols-12 gap-8">
+                            <div className="grid grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
                                 {/* Featured Next Event Bento Card */}
-                                <div className="col-span-12 lg:col-span-8 bg-surface-container-low rounded-3xl p-10 flex flex-col md:flex-row gap-8 relative overflow-hidden border border-outline-variant/5 shadow-2xl">
+                                <div className="col-span-12 lg:col-span-8 bg-surface-container-low rounded-3xl p-5 sm:p-8 lg:p-10 flex flex-col gap-6 relative overflow-hidden border border-outline-variant/5 shadow-2xl">
                                     <div className="absolute -right-20 -top-20 w-80 h-80 bg-primary/5 blur-[100px] rounded-full"></div>
 
                                     <div className="relative z-10 flex-1 flex flex-col">
@@ -272,8 +287,8 @@ export function AdminClient({ profiles }: AdminClientProps) {
 
                                         {nextEvent ? (
                                             <>
-                                                <h3 className="text-5xl font-black font-manrope mb-8 leading-tight text-white">{nextEvent.title}</h3>
-                                                <div className="flex flex-wrap gap-10 mt-auto">
+                                                <h3 className="text-2xl sm:text-4xl lg:text-5xl font-black font-manrope mb-4 sm:mb-8 leading-tight text-white">{nextEvent.title}</h3>
+                                                <div className="flex flex-wrap gap-4 sm:gap-8 lg:gap-10 mt-auto">
                                                     <div className="flex items-center gap-4 group">
                                                         <div className="w-12 h-12 rounded-2xl bg-surface-container-highest flex items-center justify-center text-primary transition-all group-hover:scale-110">
                                                             <Calendar size={24} />
@@ -333,46 +348,46 @@ export function AdminClient({ profiles }: AdminClientProps) {
                                 </div>
 
                                 {/* Stats Mini Grid */}
-                                <div className="col-span-12 lg:col-span-4 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                    <div className="bg-surface-container-low rounded-3xl p-5 md:p-8 flex flex-col justify-between border border-outline-variant/10 group hover:bg-surface-container-high transition-all">
-                                        <CheckCircle2 size={32} className="text-primary group-hover:scale-110 transition-transform shrink-0" />
-                                        <div className="mt-4">
-                                            <p className="text-4xl md:text-5xl font-black font-manrope text-white mb-1">
+                                <div className="col-span-12 lg:col-span-4 grid grid-cols-2 gap-4 sm:gap-6">
+                                    <div className="bg-surface-container-low rounded-3xl p-4 sm:p-6 lg:p-8 flex flex-col justify-between border border-outline-variant/10 group hover:bg-surface-container-high transition-all">
+                                        <CheckCircle2 size={28} className="text-primary group-hover:scale-110 transition-transform shrink-0" />
+                                        <div className="mt-3 sm:mt-4">
+                                            <p className="text-3xl sm:text-4xl lg:text-5xl font-black font-manrope text-white mb-1">
                                                 {events.reduce((acc, e) => acc + (e.assignments?.length || 0), 0)}
                                             </p>
                                             <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest leading-tight">Confirmados</p>
                                         </div>
                                     </div>
-                                    <div className="bg-surface-container-low rounded-3xl p-5 md:p-8 flex flex-col justify-between border border-outline-variant/10 group hover:bg-surface-container-high transition-all">
-                                        <Clock3 size={32} className="text-tertiary group-hover:scale-110 transition-transform shrink-0" />
-                                        <div className="mt-4">
-                                            <p className="text-4xl md:text-5xl font-black font-manrope text-white mb-1">07</p>
+                                    <div className="bg-surface-container-low rounded-3xl p-4 sm:p-6 lg:p-8 flex flex-col justify-between border border-outline-variant/10 group hover:bg-surface-container-high transition-all">
+                                        <Clock3 size={28} className="text-tertiary group-hover:scale-110 transition-transform shrink-0" />
+                                        <div className="mt-3 sm:mt-4">
+                                            <p className="text-3xl sm:text-4xl lg:text-5xl font-black font-manrope text-white mb-1">07</p>
                                             <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest leading-tight">Pendentes</p>
                                         </div>
                                     </div>
                                     <button
                                         onClick={handleGenerateEvents}
-                                        className="col-span-2 bg-primary text-on-primary rounded-3xl p-8 flex items-center justify-between group hover:brightness-110 transition-all shadow-xl shadow-primary/10"
+                                        className="col-span-2 bg-primary text-on-primary rounded-3xl p-5 sm:p-8 flex items-center justify-between group hover:brightness-110 transition-all shadow-xl shadow-primary/10"
                                     >
                                         <div className="text-left">
-                                            <p className="text-lg font-black leading-tight uppercase tracking-tighter">Gerar Lembretes do WhatsApp</p>
-                                            <p className="text-[10px] font-bold opacity-80 uppercase tracking-widest">Toda a escala da semana pronta</p>
+                                            <p className="text-sm sm:text-lg font-black leading-tight uppercase tracking-tighter">Gerar Lembretes</p>
+                                            <p className="text-[9px] sm:text-[10px] font-bold opacity-80 uppercase tracking-widest">Escala da semana pronta</p>
                                         </div>
-                                        <Send size={32} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                        <Send size={24} className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                                     </button>
                                 </div>
 
                                 {/* List Section Header */}
-                                <div className="col-span-12 mt-12 flex flex-col md:flex-row items-center md:items-end justify-between border-b border-outline-variant/10 pb-6 gap-6 text-center md:text-left">
-                                    <h3 className="text-3xl font-black font-manrope tracking-tighter text-white w-full">Listagem de Escalas</h3>
-                                    <div className="flex flex-wrap justify-center md:justify-end w-full gap-4">
-                                        <button className="flex items-center justify-center gap-2 px-6 py-2.5 bg-surface-container-low rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-surface-container-high transition-all border border-outline-variant/10 shadow-sm flex-1 md:flex-none">
-                                            <Filter size={16} />
-                                            Filtrar Função
+                                <div className="col-span-12 mt-6 sm:mt-10 lg:mt-12 flex flex-col sm:flex-row items-start sm:items-end justify-between border-b border-outline-variant/10 pb-4 sm:pb-6 gap-4">
+                                    <h3 className="text-2xl sm:text-3xl font-black font-manrope tracking-tighter text-white">Listagem de Escalas</h3>
+                                    <div className="flex gap-3 w-full sm:w-auto">
+                                        <button className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-surface-container-low rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-surface-container-high transition-all border border-outline-variant/10 shadow-sm flex-1 sm:flex-none">
+                                            <Filter size={14} />
+                                            Filtrar
                                         </button>
-                                        <button onClick={handleExportPDF} className="flex items-center justify-center gap-2 px-6 py-2.5 bg-surface-container-low rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-surface-container-high transition-all border border-outline-variant/10 shadow-sm flex-1 md:flex-none">
-                                            <Share2 size={16} />
-                                            Exportar PDF
+                                        <button onClick={handleExportPDF} className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-surface-container-low rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-surface-container-high transition-all border border-outline-variant/10 shadow-sm flex-1 sm:flex-none">
+                                            <Share2 size={14} />
+                                            Exportar
                                         </button>
                                     </div>
                                 </div>
@@ -382,49 +397,61 @@ export function AdminClient({ profiles }: AdminClientProps) {
                                     {events.map((event) => (
                                         <div
                                             key={event.id}
-                                            className="bg-surface-container rounded-3xl p-6 flex flex-col md:flex-row items-center hover:bg-surface-container-high transition-all group border border-transparent hover:border-outline-variant/10 gap-6 md:gap-8"
+                                            className="bg-surface-container rounded-3xl p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center hover:bg-surface-container-high transition-all group border border-transparent hover:border-outline-variant/10 gap-4 sm:gap-6"
                                         >
-                                            <div className="w-16 h-16 flex flex-col items-center justify-center bg-surface-container-highest rounded-2xl text-primary font-black border border-outline-variant/10 gap-0.5 shadow-sm group-hover:scale-105 transition-transform shrink-0">
-                                                <span className="text-lg leading-none">{format(parseISO(event.event_date), "dd")}</span>
-                                                <span className="text-[9px] uppercase font-bold tracking-widest">{format(parseISO(event.event_date), "MMM")}</span>
+                                            <div className="flex items-center gap-4 w-full sm:w-auto">
+                                                <div className="w-14 h-14 flex flex-col items-center justify-center bg-surface-container-highest rounded-2xl text-primary font-black border border-outline-variant/10 gap-0.5 shadow-sm group-hover:scale-105 transition-transform shrink-0">
+                                                    <span className="text-base leading-none">{format(parseISO(event.event_date), "dd")}</span>
+                                                    <span className="text-[9px] uppercase font-bold tracking-widest">{format(parseISO(event.event_date), "MMM")}</span>
+                                                </div>
+                                                <div className="sm:hidden flex-1">
+                                                    <h4 className="font-black text-white text-sm tracking-tight group-hover:text-primary transition-colors">{event.title}</h4>
+                                                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">{event.event_time.slice(0, 5)}h</p>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleDeleteEvent(event.id)}
+                                                    className="sm:hidden ml-auto p-2 text-outline hover:text-red-500 hover:bg-red-500/5 rounded-full transition-all"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
                                             </div>
 
-                                            <div className="flex-1 grid grid-cols-1 md:grid-cols-12 gap-6 items-center w-full text-center md:text-left">
-                                                <div className="md:col-span-3 lg:col-span-3">
+                                            <div className="flex-1 flex flex-col gap-3 w-full">
+                                                <div className="hidden sm:block">
                                                     <h4 className="font-black text-white text-base tracking-tight truncate group-hover:text-primary transition-colors">{event.title}</h4>
                                                     <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">{event.event_time.slice(0, 5)}h</p>
                                                 </div>
 
-                                                <div className="md:col-span-6 lg:col-span-6 flex flex-wrap justify-center md:justify-start gap-2">
+                                                <div className="flex flex-wrap gap-2">
                                                     {event.assignments?.length > 0 ? event.assignments.map((as: any) => (
-                                                        <div key={as.id} className="flex items-center gap-2 bg-surface-container-highest px-3 py-1.5 rounded-full border border-outline-variant/10 shadow-sm hover:border-primary/30 transition-colors">
-                                                            <div className="w-5 h-5 rounded-full bg-surface-container overflow-hidden flex flex-shrink-0 items-center justify-center text-[9px] font-black text-white border border-outline-variant/20">
+                                                        <div key={as.id} className="flex items-center gap-2 bg-surface-container-highest px-2.5 py-1.5 rounded-full border border-outline-variant/10 shadow-sm hover:border-primary/30 transition-colors">
+                                                            <div className="w-4 h-4 rounded-full bg-surface-container overflow-hidden flex flex-shrink-0 items-center justify-center text-[8px] font-black text-white border border-outline-variant/20">
                                                                 {as.profiles?.avatar_url ? (
                                                                     <img src={as.profiles.avatar_url} className="w-full h-full object-cover" />
                                                                 ) : (
                                                                     as.profiles?.full_name?.charAt(0) || '?'
                                                                 )}
                                                             </div>
-                                                            <span className="text-xs font-bold text-white truncate max-w-[100px] lg:max-w-[140px]">{as.profiles?.full_name || 'Sem nome'}</span>
-                                                            <span className="text-[9px] font-black uppercase text-primary tracking-widest bg-primary/10 px-2 py-0.5 rounded-md">{FUNCTION_LABELS[as.function_type as FunctionType] || as.function_type}</span>
+                                                            <span className="text-[11px] font-bold text-white truncate max-w-[80px] sm:max-w-[120px]">{as.profiles?.full_name || 'Sem nome'}</span>
+                                                            <span className="text-[9px] font-black uppercase text-primary tracking-widest bg-primary/10 px-1.5 py-0.5 rounded-md">{FUNCTION_LABELS[as.function_type as FunctionType] || as.function_type}</span>
                                                         </div>
                                                     )) : (
                                                         <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Nenhuma equipe escalada</span>
                                                     )}
                                                 </div>
+                                            </div>
 
-                                                <div className="md:col-span-3 lg:col-span-3 flex justify-center md:justify-end items-center gap-4">
-                                                    <div className="flex items-center gap-2 text-secondary-dim">
-                                                        <div className="w-2 h-2 rounded-full bg-secondary-dim shadow-[0_0_8px_#9093ff] animate-pulse"></div>
-                                                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Ativo</span>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => handleDeleteEvent(event.id)}
-                                                        className="p-2.5 text-outline hover:text-red-500 hover:bg-red-500/5 rounded-full transition-all"
-                                                    >
-                                                        <Trash2 size={18} />
-                                                    </button>
+                                            <div className="hidden sm:flex items-center gap-4 shrink-0">
+                                                <div className="flex items-center gap-2 text-secondary-dim">
+                                                    <div className="w-2 h-2 rounded-full bg-secondary-dim shadow-[0_0_8px_#9093ff] animate-pulse"></div>
+                                                    <span className="text-[10px] font-black uppercase tracking-[0.2em]">Ativo</span>
                                                 </div>
+                                                <button
+                                                    onClick={() => handleDeleteEvent(event.id)}
+                                                    className="p-2.5 text-outline hover:text-red-500 hover:bg-red-500/5 rounded-full transition-all"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
                                             </div>
                                         </div>
                                     ))}
@@ -433,19 +460,19 @@ export function AdminClient({ profiles }: AdminClientProps) {
                         </>
                     ) : (
                         <div className="animate-in fade-in slide-in-from-bottom-6 duration-700">
-                            <section className="mb-12">
-                                <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-6 text-center md:text-left">
-                                    <div className="flex flex-col items-center md:items-start w-full md:w-auto">
-                                        <h2 className="text-5xl md:text-7xl font-black font-manrope tracking-tighter text-white mb-2 leading-none w-full">Membros Pascom</h2>
-                                        <div className="flex items-center justify-center md:justify-start gap-4 flex-wrap w-full">
+                            <section className="mb-6 sm:mb-10 lg:mb-12">
+                                <div className="flex flex-col gap-4">
+                                    <div className="flex flex-col items-start w-full">
+                                        <h2 className="text-3xl sm:text-5xl lg:text-7xl font-black font-manrope tracking-tighter text-white mb-2 leading-none">Membros Pascom</h2>
+                                        <div className="flex items-center gap-3 flex-wrap">
                                             <span className="text-primary font-bold tracking-[0.2em] uppercase text-[10px]">Time de Elite</span>
-                                            <div className="h-px w-12 md:w-24 bg-surface-container-highest"></div>
+                                            <div className="h-px w-12 bg-surface-container-highest"></div>
                                             <span className="text-on-surface-variant text-xs font-medium">Gestão de voluntários e acessos</span>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => setIsFormOpen(true)}
-                                        className="h-16 px-10 rounded-full bg-white text-black font-black uppercase tracking-widest transition-all hover:scale-105 shadow-xl shadow-white/5 text-[11px] flex items-center gap-3"
+                                        className="w-full sm:w-auto h-12 sm:h-16 px-6 sm:px-10 rounded-full bg-white text-black font-black uppercase tracking-widest transition-all hover:scale-105 shadow-xl shadow-white/5 text-[11px] flex items-center justify-center gap-3"
                                     >
                                         <UserPlus size={18} />
                                         Cadastrar Membro
@@ -453,16 +480,20 @@ export function AdminClient({ profiles }: AdminClientProps) {
                                 </div>
                             </section>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                                 {profiles.map((profile) => (
-                                    <div key={profile.id} className="bg-surface-container-low rounded-3xl p-8 border border-outline-variant/10 group hover:bg-surface-container-high transition-all shadow-sm">
+                                    <div key={profile.id} className="bg-surface-container-low rounded-3xl p-5 sm:p-8 border border-outline-variant/10 group hover:bg-surface-container-high transition-all shadow-sm">
                                         <div className="flex items-start justify-between mb-8">
                                             <div className="w-16 h-16 rounded-2xl bg-surface-container-highest border border-outline-variant/20 flex items-center justify-center text-2xl font-black text-primary overflow-hidden group-hover:scale-105 transition-transform">
                                                 {profile.avatar_url ? <img src={profile.avatar_url} /> : profile.full_name?.charAt(0)}
                                             </div>
-                                            <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${profile.role === 'admin' ? 'border-primary/50 text-primary bg-primary/5' : 'border-outline/30 text-outline'}`}>
+                                            <button 
+                                                onClick={() => handleUpdateRole(profile.id, profile.role)}
+                                                className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border transition-all cursor-pointer hover:scale-105 active:scale-95 ${profile.role === 'admin' ? 'border-primary/50 text-primary bg-primary/5 hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/50' : 'border-outline/30 text-outline hover:border-primary/50 hover:text-primary'}`}
+                                                title={`Alterar para ${profile.role === 'admin' ? 'Membro' : 'Admin'}`}
+                                            >
                                                 {profile.role}
-                                            </span>
+                                            </button>
                                         </div>
                                         <h4 className="text-xl font-black text-white group-hover:text-primary transition-colors tracking-tight line-clamp-1 uppercase">{profile.full_name}</h4>
                                         <p className="text-xs text-gray-500 font-bold lowercase tracking-wider mt-1">{profile.email}</p>
@@ -499,10 +530,10 @@ export function AdminClient({ profiles }: AdminClientProps) {
                                 </button>
                             </div>
 
-                            <div className="p-10">
+                            <div className="p-5 sm:p-8 lg:p-10">
                                 {showCreateForm ? (
                                     <div className="space-y-8">
-                                        <div className="grid grid-cols-2 gap-8">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8">
                                             <div className="flex flex-col gap-3">
                                                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Título do Evento</label>
                                                 <input
@@ -608,53 +639,205 @@ export function AdminClient({ profiles }: AdminClientProps) {
                 )}
             </main>
 
-            {/* Hidden PDF Export Structure - Designed strictly for A4 fitting limit */}
-            <div id="pdf-export-container" style={{ display: 'none', background: 'white', color: 'black', padding: '15mm', fontFamily: 'sans-serif', boxSizing: 'border-box' }} className="w-[210mm] min-h-[297mm]">
-                <div style={{ borderBottom: '2px solid #111', paddingBottom: '10px', marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                    <div>
-                        <h1 style={{ fontSize: '24px', fontWeight: '900', margin: 0, textTransform: 'uppercase', letterSpacing: '-1px' }}>Escala Operacional • PASCOM</h1>
-                        <p style={{ fontSize: '11px', fontWeight: 'bold', color: '#666', margin: '4px 0 0 0', textTransform: 'uppercase', letterSpacing: '1px' }}>Gerado em: {format(new Date(), "dd/MM/yyyy • HH:mm", { locale: ptBR })}</p>
+            {/* Hidden PDF Export Structure - A4 Landscape Professional Layout */}
+            <div
+                id="pdf-export-container"
+                style={{
+                    display: 'none',
+                    background: '#ffffff',
+                    color: '#111',
+                    fontFamily: "Arial, Helvetica, sans-serif",
+                    boxSizing: 'border-box',
+                    width: '1123px',
+                    minHeight: '794px',
+                    padding: '32px 40px',
+                    overflow: 'hidden',
+                }}
+            >
+                {/* PDF Header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', paddingBottom: '16px', borderBottom: '3px solid #111' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ width: '36px', height: '36px', background: '#4361ee', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <span style={{ color: '#fff', fontSize: '18px', fontWeight: '900', lineHeight: 1 }}>P</span>
+                        </div>
+                        <div>
+                            <h1 style={{ margin: 0, fontSize: '24px', fontWeight: '900', letterSpacing: '-0.5px', lineHeight: 1 }}>PASCOM</h1>
+                            <p style={{ margin: 0, fontSize: '9px', color: '#666', fontWeight: '700', letterSpacing: '2px', textTransform: 'uppercase' }}>Pastoral de Comunicação</p>
+                        </div>
+                        <div style={{ marginLeft: '20px', paddingLeft: '20px', borderLeft: '1px solid #ddd' }}>
+                            <p style={{ margin: 0, fontSize: '13px', fontWeight: '900', color: '#222', textTransform: 'capitalize' }}>
+                                Escala Operacional — {format(new Date(), "MMMM 'de' yyyy", { locale: ptBR })}
+                            </p>
+                            <p style={{ margin: '2px 0 0', fontSize: '9px', color: '#888', fontWeight: '600' }}>
+                                Gerado em {format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                            </p>
+                        </div>
                     </div>
-                    <div style={{ fontSize: '14px', fontWeight: '900', letterSpacing: '2px', background: '#111', color: '#fff', padding: '4px 12px', borderRadius: '4px' }}>
-                        {format(new Date(), "MMMM yyyy", { locale: ptBR })}
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        {[
+                            { label: 'Eventos', value: String(events.length), color: '#4361ee' },
+                            { label: 'Confirmados', value: String(events.reduce((acc, e) => acc + (e.assignments?.length || 0), 0)), color: '#10b981' },
+                            { label: 'Solenidades', value: String(events.filter((e: any) => e.event_type === 'solenidade').length), color: '#f59e0b' },
+                            { label: 'Missas', value: String(events.filter((e: any) => e.event_type === 'missa_padrao').length), color: '#06b6d4' },
+                        ].map((stat, i) => (
+                            <div key={i} style={{ background: '#f8f9fa', borderRadius: '8px', padding: '8px 14px', borderTop: `3px solid ${stat.color}`, textAlign: 'center', minWidth: '70px' }}>
+                                <p style={{ margin: 0, fontSize: '20px', fontWeight: '900', color: '#111', lineHeight: 1 }}>{stat.value}</p>
+                                <p style={{ margin: '3px 0 0', fontSize: '8px', fontWeight: '700', color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{stat.label}</p>
+                            </div>
+                        ))}
                     </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: events.length > 5 ? '1fr 1fr' : '1fr', gap: '8px' }}>
-                    {events.map((event, index) => (
-                        <div key={index} style={{ border: '1px solid #ddd', borderRadius: '6px', padding: '10px', pageBreakInside: 'avoid', background: '#fafafa' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #eaeaea', paddingBottom: '6px', marginBottom: '8px', alignItems: 'center' }}>
-                                <div style={{ fontSize: '13px', fontWeight: '900', color: '#222' }}>{event.title}</div>
-                                <div style={{ fontSize: '11px', color: '#111', fontWeight: '800', background: '#e0e0e0', padding: '2px 8px', borderRadius: '12px' }}>
-                                    {format(parseISO(event.event_date), "dd/MM")} • {event.event_time.slice(0, 5)}h
-                                </div>
-                            </div>
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                {event.assignments?.length > 0 ? event.assignments.map((as: any, i: number) => (
-                                    <div key={i} style={{ display: 'inline-flex', alignItems: 'center', fontSize: '10px', background: '#fff', padding: '2px 6px', borderRadius: '4px', border: '1px solid #ccc', margin: '2px 0' }}>
-                                        <b style={{ marginRight: '4px', textTransform: 'uppercase', color: '#555' }}>{(FUNCTION_LABELS[as.function_type as FunctionType] || as.function_type).slice(0, 5)}:</b>
-                                        <span style={{ fontWeight: 'bold', color: '#000' }}>{as.profiles?.full_name?.split(' ')[0] || 'Sem Nome'}</span>
+                {/* Events Table */}
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10px', tableLayout: 'fixed' }}>
+                    <colgroup>
+                        <col style={{ width: '28%' }} />
+                        <col style={{ width: '7%' }} />
+                        <col style={{ width: '6%' }} />
+                        <col style={{ width: '7%' }} />
+                        <col style={{ width: '17%' }} />
+                        <col style={{ width: '17%' }} />
+                        <col style={{ width: '18%' }} />
+                    </colgroup>
+                    <thead>
+                        <tr style={{ background: '#111', color: '#fff' }}>
+                            {[
+                                { label: 'Evento / Missa' },
+                                { label: 'Data', center: true },
+                                { label: 'Hora', center: true },
+                                { label: 'Tipo', center: true },
+                                { label: '🔴  Live / Transmissão', left: true },
+                                { label: '📷  Fotos', left: true },
+                                { label: '🎬  Vídeos', left: true },
+                            ].map((col, i) => (
+                                <th key={i} style={{
+                                    padding: '10px 12px',
+                                    textAlign: col.center ? 'center' : 'left',
+                                    fontWeight: '800',
+                                    fontSize: '8px',
+                                    letterSpacing: '1px',
+                                    textTransform: 'uppercase',
+                                    borderRight: i < 3 ? '1px solid #333' : i >= 4 ? '1px solid #333' : 'none',
+                                    whiteSpace: 'nowrap',
+                                }}>{col.label}</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {events.map((event: any, index: number) => {
+                            const isSolenidade = event.event_type === 'solenidade';
+                            const liveAssignments = event.assignments?.filter((a: any) => a.function_type === 'live') || [];
+                            const fotosAssignments = event.assignments?.filter((a: any) => a.function_type === 'fotos') || [];
+                            const videosAssignments = event.assignments?.filter((a: any) => a.function_type === 'videos') || [];
+                            const rowBg = index % 2 === 0 ? '#ffffff' : '#f5f7ff';
+
+                            const memberCell = (assignments: any[], limit: number) => {
+                                if (assignments.length === 0) {
+                                    return (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#f59e0b', flexShrink: 0 }} />
+                                            <span style={{ color: '#aaa', fontStyle: 'italic', fontSize: '9px' }}>Vaga em aberto</span>
+                                        </div>
+                                    );
+                                }
+                                return (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                        {assignments.map((a: any, i: number) => (
+                                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#4361ee15', border: '1.5px solid #4361ee50', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: '900', color: '#4361ee', flexShrink: 0 }}>
+                                                    {a.profiles?.full_name?.charAt(0) || '?'}
+                                                </div>
+                                                <span style={{ fontWeight: '700', fontSize: '10px', color: '#222', wordBreak: 'break-word' }}>
+                                                    {a.profiles?.full_name?.split(' ').slice(0, 2).join(' ') || 'Sem nome'}
+                                                </span>
+                                            </div>
+                                        ))}
+                                        {assignments.length < limit && (
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#f59e0b', flexShrink: 0 }} />
+                                                <span style={{ color: '#f59e0b', fontSize: '8px', fontWeight: '700' }}>+{limit - assignments.length} vaga em aberto</span>
+                                            </div>
+                                        )}
                                     </div>
-                                )) : (
-                                    <div style={{ fontSize: '10px', color: '#999', fontStyle: 'italic', padding: '4px' }}>Nenhuma equipe escalada para este evento...</div>
-                                )}
+                                );
+                            };
+
+                            return (
+                                <tr key={event.id} style={{ background: rowBg }}>
+                                    <td style={{ padding: '10px 12px', borderBottom: '1px solid #e8e8e8', verticalAlign: 'middle' }}>
+                                        <p style={{ margin: 0, fontSize: '11px', fontWeight: '900', color: '#111', lineHeight: 1.4, wordBreak: 'break-word' }}>{event.title}</p>
+                                    </td>
+                                    <td style={{ padding: '10px 8px', borderBottom: '1px solid #e8e8e8', textAlign: 'center', verticalAlign: 'middle', borderRight: '1px solid #eee' }}>
+                                        <p style={{ margin: 0, fontSize: '11px', fontWeight: '800', color: '#222' }}>{format(parseISO(event.event_date), 'dd/MM', { locale: ptBR })}</p>
+                                        <p style={{ margin: '1px 0 0', fontSize: '8px', color: '#999', textTransform: 'capitalize' }}>{format(parseISO(event.event_date), 'EEE', { locale: ptBR })}</p>
+                                    </td>
+                                    <td style={{ padding: '10px 8px', borderBottom: '1px solid #e8e8e8', textAlign: 'center', verticalAlign: 'middle', borderRight: '1px solid #eee' }}>
+                                        <p style={{ margin: 0, fontSize: '11px', fontWeight: '800', color: '#222' }}>{event.event_time?.slice(0, 5)}h</p>
+                                    </td>
+                                    <td style={{ padding: '10px 8px', borderBottom: '1px solid #e8e8e8', textAlign: 'center', verticalAlign: 'middle', borderRight: '1px solid #eee' }}>
+                                        <span style={{
+                                            display: 'inline-block',
+                                            fontSize: '7px',
+                                            fontWeight: '800',
+                                            padding: '3px 6px',
+                                            borderRadius: '10px',
+                                            background: isSolenidade ? '#fef3c7' : '#e0e7ff',
+                                            color: isSolenidade ? '#92400e' : '#3730a3',
+                                            border: `1px solid ${isSolenidade ? '#fde68a' : '#c7d2fe'}`,
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '0.3px',
+                                            whiteSpace: 'nowrap',
+                                        }}>
+                                            {isSolenidade ? 'Solenidade' : 'Padrão'}
+                                        </span>
+                                    </td>
+                                    <td style={{ padding: '10px 12px', borderBottom: '1px solid #e8e8e8', verticalAlign: 'middle', borderLeft: '2px solid #eee' }}>
+                                        {memberCell(liveAssignments, 2)}
+                                    </td>
+                                    <td style={{ padding: '10px 12px', borderBottom: '1px solid #e8e8e8', verticalAlign: 'middle', borderLeft: '1px solid #eee' }}>
+                                        {memberCell(fotosAssignments, isSolenidade ? 3 : 1)}
+                                    </td>
+                                    <td style={{ padding: '10px 12px', borderBottom: '1px solid #e8e8e8', verticalAlign: 'middle', borderLeft: '1px solid #eee' }}>
+                                        {memberCell(videosAssignments, 1)}
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+
+                {/* Footer */}
+                <div style={{ marginTop: '20px', borderTop: '1px dashed #ddd', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                        <span style={{ fontSize: '8px', fontWeight: '800', color: '#888', textTransform: 'uppercase', letterSpacing: '1px' }}>Legenda:</span>
+                        {[
+                            { bg: '#e0e7ff', border: '#c7d2fe', label: 'Missa Padrão' },
+                            { bg: '#fef3c7', border: '#fde68a', label: 'Solenidade' },
+                        ].map((item, i) => (
+                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <span style={{ width: '10px', height: '10px', borderRadius: '3px', background: item.bg, border: `1px solid ${item.border}`, display: 'inline-block' }} />
+                                <span style={{ fontSize: '9px', fontWeight: '700', color: '#555' }}>{item.label}</span>
                             </div>
+                        ))}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }} />
+                            <span style={{ fontSize: '9px', fontWeight: '700', color: '#555' }}>Vaga em aberto</span>
                         </div>
-                    ))}
-                </div>
-                <div style={{ marginTop: '20px', textAlign: 'center', fontSize: '9px', color: '#999', borderTop: '1px dashed #ddd', paddingTop: '10px' }}>
-                    Sistema Pastoral de Comunicação • Painel Administrativo Automático
+                    </div>
+                    <p style={{ margin: 0, fontSize: '8px', color: '#bbb', fontWeight: '600' }}>
+                        PASCOM • Pastoral de Comunicação • {format(new Date(), "dd/MM/yyyy", { locale: ptBR })}
+                    </p>
                 </div>
             </div>
 
             {/* Toast Notifications */}
             {toast && (
-                <div className="fixed bottom-10 right-10 z-[200] animate-in slide-in-from-right-full duration-500">
-                    <div className={`px-10 py-6 rounded-3xl shadow-4xl flex items-center gap-6 border-l-8 backdrop-blur-3xl transition-all
+                <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:max-w-sm z-[200] animate-in slide-in-from-bottom-4 sm:slide-in-from-right-full duration-500">
+                    <div className={`px-5 sm:px-8 py-4 sm:py-5 rounded-2xl shadow-2xl flex items-center gap-4 border-l-4 sm:border-l-8 backdrop-blur-3xl transition-all
                         ${toast.type === 'success' ? 'bg-surface-container-high border-primary text-white' : 'bg-red-950/40 border-red-600 text-white'}`}>
-                        <div className={`w-3 h-3 rounded-full ${toast.type === 'success' ? 'bg-primary' : 'bg-red-500'} animate-pulse shadow-[0_0_10px_currentColor]`} />
-                        <span className="text-[11px] font-black uppercase tracking-widest">{toast.message}</span>
-                        <button onClick={() => setToast(null)} className="ml-4 opacity-50 hover:opacity-100">
+                        <div className={`w-2.5 h-2.5 rounded-full shrink-0 ${toast.type === 'success' ? 'bg-primary' : 'bg-red-500'} animate-pulse shadow-[0_0_10px_currentColor]`} />
+                        <span className="text-[11px] font-black uppercase tracking-widest flex-1 leading-snug">{toast.message}</span>
+                        <button onClick={() => setToast(null)} className="opacity-50 hover:opacity-100 shrink-0">
                             <X size={16} />
                         </button>
                     </div>

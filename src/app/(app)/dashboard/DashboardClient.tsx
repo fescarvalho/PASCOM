@@ -57,45 +57,45 @@ export function DashboardClient({ userId, isAdmin }: DashboardClientProps) {
     const isCurrentWeek = format(weekStart, 'yyyy-ww') === format(startOfWeek(new Date(), { weekStartsOn: 0 }), 'yyyy-ww');
 
     return (
-        <div className="space-y-8">
+        <div className="space-y-6">
             {/* Welcome Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gradient-to-br from-zinc-900/50 to-black p-8 rounded-3xl border border-white/5 relative overflow-hidden group">
+            <div className="flex flex-col gap-5 bg-gradient-to-br from-zinc-900/50 to-black p-5 sm:p-8 rounded-3xl border border-white/5 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32 group-hover:bg-primary/10 transition-colors" />
 
                 <div className="relative space-y-2">
-                    <h1 className="text-3xl md:text-4xl font-black text-white tracking-tighter">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tighter">
                         Escalas da <span className="text-primary italic">Semana</span>
                     </h1>
-                    <p className="text-zinc-500 text-sm font-medium max-w-md">
+                    <p className="text-zinc-500 text-sm font-medium">
                         Confira as escalas e assuma sua vaga para contribuir com a nossa missão.
                     </p>
                 </div>
 
-                <div className="flex items-center gap-3 relative">
-                    <div className="flex bg-zinc-900/80 backdrop-blur-md p-1.5 rounded-2xl border border-white/5 shadow-xl">
+                <div className="flex flex-wrap items-center gap-3 relative">
+                    <div className="flex flex-1 min-w-0 bg-zinc-900/80 backdrop-blur-md p-1.5 rounded-2xl border border-white/5 shadow-xl">
                         <button
                             onClick={goToPrevWeek}
-                            className="p-2.5 hover:bg-white/5 rounded-xl transition-colors text-zinc-400 hover:text-white"
+                            className="p-2 sm:p-2.5 hover:bg-white/5 rounded-xl transition-colors text-zinc-400 hover:text-white shrink-0"
                         >
-                            <ChevronLeft size={20} />
+                            <ChevronLeft size={18} />
                         </button>
-                        <div className="px-6 flex items-center justify-center min-w-[180px]">
-                            <span className="text-sm font-bold tracking-tight text-white block truncate">
+                        <div className="flex-1 flex items-center justify-center px-2 sm:px-4 min-w-0">
+                            <span className="text-xs sm:text-sm font-bold tracking-tight text-white truncate">
                                 {format(weekStart, "dd MMM", { locale: ptBR })} — {format(weekEnd, "dd MMM", { locale: ptBR })}
                             </span>
                         </div>
                         <button
                             onClick={goToNextWeek}
-                            className="p-2.5 hover:bg-white/5 rounded-xl transition-colors text-zinc-400 hover:text-white"
+                            className="p-2 sm:p-2.5 hover:bg-white/5 rounded-xl transition-colors text-zinc-400 hover:text-white shrink-0"
                         >
-                            <ChevronRight size={20} />
+                            <ChevronRight size={18} />
                         </button>
                     </div>
 
                     {!isCurrentWeek && (
                         <button
                             onClick={goToThisWeek}
-                            className="p-3 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/5 transition-all text-xs font-black uppercase tracking-widest"
+                            className="p-2.5 sm:p-3 bg-white/5 hover:bg-white/10 rounded-2xl border border-white/5 transition-all text-xs font-black uppercase tracking-widest shrink-0"
                         >
                             Hoje
                         </button>
@@ -104,9 +104,9 @@ export function DashboardClient({ userId, isAdmin }: DashboardClientProps) {
                     <button
                         onClick={() => fetchEvents(true)}
                         disabled={refreshing}
-                        className="p-3 bg-primary/10 hover:bg-primary/20 rounded-2xl border border-primary/20 transition-all text-primary"
+                        className="p-2.5 sm:p-3 bg-primary/10 hover:bg-primary/20 rounded-2xl border border-primary/20 transition-all text-primary shrink-0"
                     >
-                        <RefreshCw size={20} className={refreshing ? 'animate-spin' : ''} />
+                        <RefreshCw size={18} className={refreshing ? 'animate-spin' : ''} />
                     </button>
                 </div>
             </div>

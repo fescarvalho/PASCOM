@@ -315,3 +315,39 @@ export async function deleteMember(memberId: string) {
     revalidatePath('/membros');
     return { success: true };
 }
+
+export async function updateMemberRole(memberId: string, newRole: 'member' | 'admin') {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: 'Não autenticado.' };
+
+    // Check if requester is admin
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') {
+        return { error: 'Acesso negado. Somente admins podem alterar permissões.' };
+    }
+
+    // Prevent demoting yourself
+    if (memberId === user.id && newRole === 'member') {
+        return { error: 'Você não pode remover sua própria permissão de admin.' };
+    }
+
+    const { error } = await supabase
+        .from('profiles')
+        .update({ role: newRole })
+        .eq('id', memberId);
+
+    if (error) {
+        console.error('Error updating role:', error);
+        return { error: 'Erro ao atualizar permissão.' };
+    }
+
+    revalidatePath('/admin');
+    return { success: true };
+}

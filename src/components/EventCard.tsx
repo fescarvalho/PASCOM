@@ -16,15 +16,43 @@ import {
     Sparkles,
     User as UserIcon,
     CheckCircle2,
+    AlertCircle,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 const FUNCTION_ICONS: Record<FunctionType, React.ReactNode> = {
-    live: <Radio size={16} />,
-    fotos: <Camera size={16} />,
-    videos: <Video size={16} />,
-    stories: <Sparkles size={16} />,
+    live: <Radio size={14} />,
+    fotos: <Camera size={14} />,
+    videos: <Video size={14} />,
+    stories: <Sparkles size={14} />,
+};
+
+const FUNCTION_COLORS: Record<FunctionType, { bg: string; border: string; text: string; bar: string }> = {
+    live: {
+        bg: 'bg-blue-500/10',
+        border: 'border-blue-500/30',
+        text: 'text-blue-400',
+        bar: 'bg-blue-500',
+    },
+    fotos: {
+        bg: 'bg-purple-500/10',
+        border: 'border-purple-500/30',
+        text: 'text-purple-400',
+        bar: 'bg-purple-500',
+    },
+    videos: {
+        bg: 'bg-pink-500/10',
+        border: 'border-pink-500/30',
+        text: 'text-pink-400',
+        bar: 'bg-pink-500',
+    },
+    stories: {
+        bg: 'bg-amber-500/10',
+        border: 'border-amber-500/30',
+        text: 'text-amber-400',
+        bar: 'bg-amber-500',
+    },
 };
 
 interface EventCardProps {
@@ -39,7 +67,6 @@ export function EventCard({ event, currentUserId, isAdmin }: EventCardProps) {
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
     const [localAssignments, setLocalAssignments] = useState<Assignment[]>(event.assignments || []);
 
-    // Sync with server if event.assignments changes (e.g. Next.js revalidates)
     useEffect(() => {
         setLocalAssignments(event.assignments || []);
     }, [event.assignments]);
@@ -61,7 +88,6 @@ export function EventCard({ event, currentUserId, isAdmin }: EventCardProps) {
             if (result.error) {
                 showToast('error', result.error);
             } else {
-                // Optimistic UI update
                 setLocalAssignments(prev => [...prev, {
                     id: `temp-${Date.now()}`,
                     event_id: event.id,
@@ -82,7 +108,6 @@ export function EventCard({ event, currentUserId, isAdmin }: EventCardProps) {
             if (result.error) {
                 showToast('error', result.error);
             } else {
-                // Optimistic UI update
                 setLocalAssignments(prev => prev.filter(a => a.id !== assignmentId));
                 showToast('success', `Vaga de ${FUNCTION_LABELS[functionType]} liberada.`);
             }
@@ -90,85 +115,172 @@ export function EventCard({ event, currentUserId, isAdmin }: EventCardProps) {
         });
     };
 
-    const getAssignmentsForFunction = (functionType: FunctionType): Assignment[] => {
-        return localAssignments.filter(a => a.function_type === functionType);
-    };
+    const getAssignmentsForFunction = (functionType: FunctionType): Assignment[] =>
+        localAssignments.filter(a => a.function_type === functionType);
 
-    const getSlotLimit = (functionType: FunctionType): number => {
-        return SLOT_LIMITS[event.event_type as EventType][functionType];
-    };
+    const getSlotLimit = (functionType: FunctionType): number =>
+        SLOT_LIMITS[event.event_type as EventType][functionType];
+
+    // Calculate overall fill progress
+    const totalSlots = ACTIVE_FUNCTIONS.reduce((acc, f) => acc + getSlotLimit(f), 0);
+    const filledSlots = localAssignments.filter(a => ACTIVE_FUNCTIONS.includes(a.function_type)).length;
+    const overallPercent = totalSlots > 0 ? Math.round((filledSlots / totalSlots) * 100) : 0;
+    const isFullyStaffed = filledSlots >= totalSlots && totalSlots > 0;
+    const hasMySlot = localAssignments.some(a => a.user_id === currentUserId);
 
     return (
-        <div className="glass-card flex flex-col h-full">
+        <div className="relative flex flex-col rounded-3xl border border-white/5 bg-zinc-900/40 backdrop-blur-sm overflow-hidden group hover:border-white/10 transition-all duration-300 hover:shadow-[0_0_40px_rgba(0,0,0,0.4)]">
+
+            {/* Top accent bar */}
+            <div className={`h-1 w-full ${isSolenidade ? 'bg-gradient-to-r from-amber-500 via-orange-400 to-amber-500' : 'bg-gradient-to-r from-primary/60 via-primary to-primary/60'}`} />
+
             {/* Header */}
-            <div className="p-5 border-b border-white/5 space-y-3">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-primary font-semibold text-xs tracking-wider uppercase">
-                        <Calendar size={14} />
-                        {dayName}
+            <div className="p-5 pb-4">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                    {/* Date block */}
+                    <div className="flex items-center gap-3">
+                        <div className={`w-12 h-12 rounded-2xl flex flex-col items-center justify-center border shrink-0 ${isSolenidade ? 'bg-amber-500/10 border-amber-500/30' : 'bg-primary/10 border-primary/20'}`}>
+                            <span className={`text-lg font-black leading-none ${isSolenidade ? 'text-amber-400' : 'text-primary'}`}>
+                                {format(eventDate, 'dd')}
+                            </span>
+                            <span className={`text-[9px] font-bold uppercase tracking-wider ${isSolenidade ? 'text-amber-500/70' : 'text-primary/60'}`}>
+                                {format(eventDate, 'MMM', { locale: ptBR })}
+                            </span>
+                        </div>
+                        <div>
+                            <p className={`text-[10px] font-black uppercase tracking-[0.15em] mb-0.5 ${isSolenidade ? 'text-amber-400' : 'text-primary'}`}>
+                                {dayName}
+                            </p>
+                            <h3 className="text-base font-black text-white tracking-tight leading-tight">
+                                {event.title}
+                            </h3>
+                            <div className="flex items-center gap-1.5 mt-1 text-zinc-500">
+                                <Clock size={11} />
+                                <span className="text-xs font-medium">{event.event_time?.slice(0, 5)}</span>
+                                <span className="text-zinc-700">•</span>
+                                <span className="text-xs">{formattedDate}</span>
+                            </div>
+                        </div>
                     </div>
-                    <span className={`badge ${isSolenidade ? 'badge-solenidade' : 'badge-missa'} px-3 py-1`}>
-                        {isSolenidade ? '✦ Solenidade' : 'Missa Padrão'}
+
+                    {/* Type badge */}
+                    <span className={`shrink-0 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${
+                        isSolenidade
+                            ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                            : 'bg-zinc-800 border-zinc-700 text-zinc-400'
+                    }`}>
+                        {isSolenidade ? '✦ Solenidade' : 'Padrão'}
                     </span>
                 </div>
 
-                <div className="space-y-1">
-                    <h3 className="text-xl font-bold text-white tracking-tight">
-                        {event.title}
-                    </h3>
-                    <div className="flex items-center gap-2 text-zinc-500 text-sm">
-                        <Clock size={14} />
-                        {event.event_time?.slice(0, 5)} • {formattedDate}
+                {/* Overall progress */}
+                <div className="flex items-center gap-3 mt-3">
+                    <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                        <div
+                            className={`h-full rounded-full transition-all duration-700 ${isFullyStaffed ? 'bg-green-500' : 'bg-primary'}`}
+                            style={{ width: `${overallPercent}%` }}
+                        />
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                        {isFullyStaffed ? (
+                            <CheckCircle2 size={13} className="text-green-500" />
+                        ) : filledSlots === 0 ? (
+                            <AlertCircle size={13} className="text-zinc-600" />
+                        ) : (
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                        )}
+                        <span className={`text-[10px] font-black uppercase tracking-widest ${
+                            isFullyStaffed ? 'text-green-500' : filledSlots === 0 ? 'text-zinc-600' : 'text-zinc-400'
+                        }`}>
+                            {isFullyStaffed ? 'Completo' : `${filledSlots}/${totalSlots} vagas`}
+                        </span>
                     </div>
                 </div>
+
+                {/* "You're in" indicator */}
+                {hasMySlot && (
+                    <div className="mt-2.5 flex items-center gap-1.5 bg-primary/10 border border-primary/20 rounded-xl px-3 py-1.5">
+                        <CheckCircle2 size={12} className="text-primary" />
+                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">Você está escalado</span>
+                    </div>
+                )}
             </div>
 
-            {/* Slots Section */}
-            <div className="p-5 flex-1 space-y-6">
+            {/* Divider */}
+            <div className="mx-5 h-px bg-white/5" />
+
+            {/* Function Slots */}
+            <div className="p-5 flex-1 space-y-4">
                 {ACTIVE_FUNCTIONS.map(func => {
                     const assignments = getAssignmentsForFunction(func);
                     const limit = getSlotLimit(func);
                     const isFull = assignments.length >= limit;
                     const availableSlots = limit - assignments.length;
+                    const fillPercent = limit > 0 ? (assignments.length / limit) * 100 : 0;
+                    const colors = FUNCTION_COLORS[func];
+                    const myAssignment = assignments.find(a => a.user_id === currentUserId);
 
                     if (limit === 0) return null;
 
                     return (
-                        <div key={func} className="space-y-3">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2 text-zinc-300">
-                                    <span className={isFull ? 'text-primary' : 'text-zinc-500'}>
-                                        {FUNCTION_ICONS[func]}
-                                    </span>
-                                    <span className="text-sm font-bold tracking-tight">
-                                        {FUNCTION_LABELS[func]}
+                        <div key={func} className={`rounded-2xl border p-3.5 transition-all ${colors.bg} ${colors.border}`}>
+                            {/* Function header */}
+                            <div className="flex items-center justify-between mb-3">
+                                <div className={`flex items-center gap-2 ${colors.text}`}>
+                                    {FUNCTION_ICONS[func]}
+                                    <span className="text-xs font-black tracking-tight">{FUNCTION_LABELS[func]}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {/* Mini progress */}
+                                    <div className="flex gap-0.5">
+                                        {Array.from({ length: limit }).map((_, i) => (
+                                            <div
+                                                key={i}
+                                                className={`w-4 h-1.5 rounded-full transition-all duration-500 ${i < assignments.length ? colors.bar : 'bg-white/10'}`}
+                                            />
+                                        ))}
+                                    </div>
+                                    <span className={`text-[10px] font-black tabular-nums ${isFull ? colors.text : 'text-zinc-600'}`}>
+                                        {assignments.length}/{limit}
                                     </span>
                                 </div>
-                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${isFull ? 'border-primary/50 text-primary' : 'border-zinc-800 text-zinc-500'}`}>
-                                    {assignments.length} / {limit}
-                                </span>
                             </div>
 
-                            <div className="flex flex-wrap gap-2">
+                            {/* Assigned people */}
+                            <div className="space-y-1.5">
                                 {assignments.map(assignment => {
                                     const isOwnSlot = assignment.user_id === currentUserId;
+                                    const initials = assignment.profiles?.full_name
+                                        ?.split(' ')
+                                        .slice(0, 2)
+                                        .map(n => n[0])
+                                        .join('') || '?';
                                     return (
                                         <div
                                             key={assignment.id}
-                                            className={`group flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-all
-                        ${isOwnSlot
-                                                    ? 'bg-primary/20 border-primary/40 text-white shadow-[0_0_15px_rgba(0,0,255,0.1)]'
-                                                    : 'bg-zinc-900/50 border-white/5 text-zinc-400'}`}
+                                            className={`flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all ${
+                                                isOwnSlot
+                                                    ? 'bg-white/10 border border-white/15'
+                                                    : 'bg-black/20'
+                                            }`}
                                         >
-                                            <UserIcon size={12} className={isOwnSlot ? 'text-primary' : 'text-zinc-600'} />
-                                            <span className="max-w-[120px] truncate">
-                                                {assignment.profiles?.full_name || 'Membro'}
+                                            {/* Avatar */}
+                                            <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${
+                                                isOwnSlot
+                                                    ? `${colors.bg} ${colors.text} border ${colors.border}`
+                                                    : 'bg-zinc-800 text-zinc-400'
+                                            }`}>
+                                                {initials}
+                                            </div>
+                                            <span className={`text-xs font-bold flex-1 truncate ${isOwnSlot ? 'text-white' : 'text-zinc-400'}`}>
+                                                {isOwnSlot ? `${assignment.profiles?.full_name || 'Você'} (você)` : assignment.profiles?.full_name || 'Membro'}
                                             </span>
                                             {isOwnSlot && (
                                                 <button
                                                     onClick={() => handleRelease(assignment.id, func)}
                                                     disabled={isPending}
-                                                    className="hover:scale-110 transition-transform text-white/50 hover:text-white"
+                                                    className="shrink-0 p-1 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
+                                                    title="Liberar vaga"
                                                 >
                                                     {activeAction === `release-${assignment.id}` ? (
                                                         <Loader2 size={12} className="animate-spin" />
@@ -181,28 +293,32 @@ export function EventCard({ event, currentUserId, isAdmin }: EventCardProps) {
                                     );
                                 })}
 
-                                {Array.from({ length: availableSlots }).map((_, i) => (
+                                {/* Available slots */}
+                                {availableSlots > 0 && (
                                     <button
-                                        key={`available-${i}`}
                                         onClick={() => handleClaim(func)}
-                                        disabled={isPending}
-                                        className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border border-dashed border-zinc-800 text-zinc-600 hover:border-primary/50 hover:text-primary hover:bg-primary/5 transition-all"
+                                        disabled={isPending || !!myAssignment}
+                                        className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold border border-dashed transition-all
+                                            ${myAssignment
+                                                ? 'border-zinc-800 text-zinc-700 cursor-not-allowed'
+                                                : `${colors.border} ${colors.text} hover:bg-white/5 active:scale-[0.98]`
+                                            }`}
                                     >
                                         {activeAction === `claim-${func}` ? (
                                             <Loader2 size={14} className="animate-spin" />
                                         ) : (
                                             <>
-                                                <Plus size={14} />
-                                                Assumir
+                                                <Plus size={13} />
+                                                {availableSlots === 1 ? '1 vaga disponível' : `${availableSlots} vagas disponíveis`}
                                             </>
                                         )}
                                     </button>
-                                ))}
+                                )}
 
-                                {isFull && assignments.length > 0 && (
-                                    <div className="flex items-center gap-1 text-[10px] text-primary/60 font-bold uppercase tracking-wider pl-1">
+                                {isFull && (
+                                    <div className={`flex items-center justify-center gap-1.5 py-1.5 text-[10px] font-black uppercase tracking-widest ${colors.text} opacity-70`}>
                                         <CheckCircle2 size={10} />
-                                        Full
+                                        Equipe completa
                                     </div>
                                 )}
                             </div>
@@ -211,14 +327,14 @@ export function EventCard({ event, currentUserId, isAdmin }: EventCardProps) {
                 })}
             </div>
 
-            {/* Footer Visual Decor */}
-            <div className="h-1 w-full bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
-
-            {/* Action Toasts */}
+            {/* Toast */}
             {toast && (
-                <div className="absolute top-2 left-2 right-2 z-50">
-                    <div className={`px-4 py-3 rounded-xl text-xs font-bold shadow-2xl animate-in
-             ${toast.type === 'success' ? 'bg-zinc-900 border border-green-500/50 text-green-500' : 'bg-zinc-900 border border-red-500/50 text-red-500'}`}>
+                <div className="absolute top-3 left-3 right-3 z-50">
+                    <div className={`px-4 py-3 rounded-2xl text-xs font-bold shadow-2xl border flex items-center gap-2
+                        ${toast.type === 'success'
+                            ? 'bg-zinc-900 border-green-500/40 text-green-400'
+                            : 'bg-zinc-900 border-red-500/40 text-red-400'}`}>
+                        {toast.type === 'success' ? <CheckCircle2 size={13} /> : <AlertCircle size={13} />}
                         {toast.message}
                     </div>
                 </div>

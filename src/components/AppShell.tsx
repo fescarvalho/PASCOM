@@ -182,7 +182,7 @@ export function AppShell({ profile, children }: AppShellProps) {
 
                 {/* Page Content */}
                 <main
-                    className={`flex-1 overflow-x-hidden w-full mx-auto transition-all duration-300 ${pathname?.startsWith('/admin') ? 'max-w-none' : 'p-6 md:px-20 md:py-12 max-w-[1400px]'}`}
+                    className={`flex-1 overflow-x-hidden w-full mx-auto transition-all duration-300 ${pathname?.startsWith('/admin') ? 'max-w-none' : 'p-4 sm:p-6 md:px-20 md:py-12 max-w-[1400px]'}`}
                     style={pathname?.startsWith('/admin') ? { padding: 0 } : undefined}
                 >
                     <div className="animate-in">
