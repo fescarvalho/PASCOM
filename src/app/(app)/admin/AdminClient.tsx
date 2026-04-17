@@ -8,11 +8,13 @@ import {
     getUpcomingEvents,
     generateRecurringEvents,
     registerMember,
-    deleteMember,
     updateMemberRole,
+    updateMember,
+    createOrUpdateFunction,
+    deleteFunction,
+    deleteMember,
 } from './actions';
-import { FUNCTION_LABELS } from '@/types';
-import type { FunctionType } from '@/types';
+import type { FunctionType, SysFunction } from '@/types';
 import {
     Plus,
     Trash2,
@@ -40,23 +42,26 @@ import {
     Video,
     Share2,
     Filter,
+    Edit2,
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 interface AdminClientProps {
     profiles: any[];
+    sysFunctions: SysFunction[];
 }
 
-export function AdminClient({ profiles }: AdminClientProps) {
+export function AdminClient({ profiles, sysFunctions }: AdminClientProps) {
     const [isPending, startTransition] = useTransition();
     const [events, setEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<'events' | 'members'>('events');
+    const [editingMember, setEditingMember] = useState<any>(null);
+    const [activeTab, setActiveTab] = useState<'events' | 'members' | 'functions'>('events');
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
-    const [viewFilter, setViewFilter] = useState<'semana' | 'mes' | 'equipes'>('mes');
+    const [filterMonth, setFilterMonth] = useState<string>('');
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
     // Form state for Event
@@ -133,16 +138,58 @@ export function AdminClient({ profiles }: AdminClientProps) {
         });
     };
 
-    const handleGenerateEvents = async () => {
-        setLoading(true);
-        const res = await generateRecurringEvents(4);
-        if (res.success) {
-            showToast(`Sucesso! ${res.count} eventos gerados.`, 'success');
-            fetchEvents();
-        } else {
-            showToast(res.error || 'Erro ao gerar eventos.', 'error');
+    const handleShareReminders = async () => {
+        try {
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            const inSevenDays = new Date(now);
+            inSevenDays.setDate(now.getDate() + 7);
+            
+            const weekEvents = events.filter(e => {
+                const eDate = parseISO(e.event_date);
+                return eDate >= now && eDate <= inSevenDays;
+            });
+            
+            if (weekEvents.length === 0) {
+                showToast('Nenhum evento na próxima semana para lembrar.', 'error');
+                return;
+            }
+
+            let text = `📅 *ESCALA PASCOM DA SEMANA*\n\n`;
+            weekEvents.forEach(e => {
+                text += `*${e.title}* - ${format(parseISO(e.event_date), 'dd/MM')} às ${e.event_time?.slice(0, 5)}h\n`;
+                if (!e.assignments || e.assignments.length === 0) {
+                    text += `_Ninguém escalado ainda_\n\n`;
+                    return;
+                }
+                const asByFunc = sysFunctions.filter(f => f.is_active).map(f => {
+                    const as = e.assignments.filter((a: any) => a.function_type === f.id);
+                    if (as.length === 0) return null;
+                    return `> ${f.label}: ${as.map((a: any) => a.profiles?.full_name?.split(' ')[0] || 'Sem nome').join(', ')}`;
+                }).filter(Boolean);
+
+                if (asByFunc.length > 0) {
+                    text += asByFunc.join('\n') + '\n\n';
+                } else {
+                    text += `_Ninguém escalado ainda_\n\n`;
+                }
+            });
+
+            text += `Deus abençoe a doação do serviço de cada um! 🙏`;
+
+            if (navigator.share) {
+                await navigator.share({
+                    title: 'Escala Pascom',
+                    text: text
+                });
+            } else {
+                await navigator.clipboard.writeText(text);
+                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`);
+            }
+        } catch (error) {
+            console.error(error);
+            showToast('Erro ao compartilhar lembretes', 'error');
         }
-        setLoading(false);
     };
 
     const handleRegisterMember = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -167,6 +214,32 @@ export function AdminClient({ profiles }: AdminClientProps) {
             }
         } catch (error: any) {
             console.error('Crash in registerMember:', error);
+            showToast(error.message || 'Erro inesperado no servidor. Tente novamente.', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleEditMemberSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setLoading(true);
+        const formData = new FormData(e.currentTarget);
+        const data = {
+            full_name: formData.get('full_name') as string,
+            email: formData.get('email') as string,
+            role: formData.get('role') as 'member' | 'admin',
+        };
+
+        try {
+            const res = await updateMember(editingMember.id, data);
+            if (res.success) {
+                showToast(`Membro atualizado com sucesso!`, 'success');
+                setEditingMember(null);
+            } else {
+                showToast(res.error || 'Erro ao atualizar.', 'error');
+            }
+        } catch (error: any) {
+            console.error('Crash in updateMember:', error);
             showToast(error.message || 'Erro inesperado no servidor. Tente novamente.', 'error');
         } finally {
             setLoading(false);
@@ -214,7 +287,7 @@ export function AdminClient({ profiles }: AdminClientProps) {
                 filename: `Escala_Pascom_${format(new Date(), "MMM_yyyy")}.pdf`,
                 image: { type: 'jpeg' as const, quality: 1.0 },
                 html2canvas: { scale: 2, useCORS: true, logging: false, width: 1123 },
-                jsPDF: { unit: 'px', format: [1587, 1123], orientation: 'landscape' as const, hotfixes: ['px_scaling'] }
+                jsPDF: { unit: 'px', format: [1587, 1123] as [number, number], orientation: 'landscape' as const, hotfixes: ['px_scaling'] }
             };
 
             await html2pdf().set(opt).from(element).save();
@@ -337,7 +410,7 @@ export function AdminClient({ profiles }: AdminClientProps) {
                                                         <div>
                                                             <p className="text-sm font-bold text-white leading-tight">{as.profiles?.full_name}</p>
                                                             <p className="text-[10px] text-primary uppercase font-black tracking-tighter opacity-70">
-                                                                {FUNCTION_LABELS[as.function_type as FunctionType]}
+                                                                {sysFunctions.find(f => f.id === as.function_type)?.label || as.function_type}
                                                             </p>
                                                         </div>
                                                     </div>
@@ -361,12 +434,22 @@ export function AdminClient({ profiles }: AdminClientProps) {
                                     <div className="bg-surface-container-low rounded-3xl p-4 sm:p-6 lg:p-8 flex flex-col justify-between border border-outline-variant/10 group hover:bg-surface-container-high transition-all">
                                         <Clock3 size={28} className="text-tertiary group-hover:scale-110 transition-transform shrink-0" />
                                         <div className="mt-3 sm:mt-4">
-                                            <p className="text-3xl sm:text-4xl lg:text-5xl font-black font-manrope text-white mb-1">07</p>
+                                            <p className="text-3xl sm:text-4xl lg:text-5xl font-black font-manrope text-white mb-1">
+                                                {(() => {
+                                                    const confirmed = events.reduce((acc, e) => acc + (e.assignments?.length || 0), 0);
+                                                    const totalSlots = events.reduce((acc, e) => {
+                                                        const isSolenidade = e.event_type === 'solenidade';
+                                                        const lim = sysFunctions.filter(f => f.is_active).reduce((s, f) => s + (isSolenidade ? f.limit_solenidade : f.limit_padrao), 0);
+                                                        return acc + lim;
+                                                    }, 0);
+                                                    return Math.max(0, totalSlots - confirmed);
+                                                })()}
+                                            </p>
                                             <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest leading-tight">Pendentes</p>
                                         </div>
                                     </div>
                                     <button
-                                        onClick={handleGenerateEvents}
+                                        onClick={handleShareReminders}
                                         className="col-span-2 bg-primary text-on-primary rounded-3xl p-5 sm:p-8 flex items-center justify-between group hover:brightness-110 transition-all shadow-xl shadow-primary/10"
                                     >
                                         <div className="text-left">
@@ -381,10 +464,22 @@ export function AdminClient({ profiles }: AdminClientProps) {
                                 <div className="col-span-12 mt-6 sm:mt-10 lg:mt-12 flex flex-col sm:flex-row items-start sm:items-end justify-between border-b border-outline-variant/10 pb-4 sm:pb-6 gap-4">
                                     <h3 className="text-2xl sm:text-3xl font-black font-manrope tracking-tighter text-white">Listagem de Escalas</h3>
                                     <div className="flex gap-3 w-full sm:w-auto">
-                                        <button className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-surface-container-low rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-surface-container-high transition-all border border-outline-variant/10 shadow-sm flex-1 sm:flex-none">
-                                            <Filter size={14} />
-                                            Filtrar
-                                        </button>
+                                        <div className="flex bg-surface-container-low rounded-full border border-outline-variant/10 shadow-sm overflow-hidden flex-1 sm:flex-none h-10 items-center transition-colors group focus-within:border-primary/50 focus-within:bg-surface-container-high hover:bg-surface-container-high cursor-pointer">
+                                            <div className="pl-4 text-gray-400 group-focus-within:text-primary transition-colors">
+                                                <Calendar size={14} />
+                                            </div>
+                                            <input 
+                                                type="month" 
+                                                value={filterMonth}
+                                                onChange={(e) => setFilterMonth(e.target.value)}
+                                                className="bg-transparent text-[10px] font-black uppercase tracking-widest text-white outline-none w-full cursor-pointer pl-3 pr-2 h-full color-scheme-dark" 
+                                            />
+                                            {filterMonth && (
+                                                <button onClick={() => setFilterMonth('')} className="pr-4 text-gray-500 hover:text-red-400 transition-colors">
+                                                    <X size={14} />
+                                                </button>
+                                            )}
+                                        </div>
                                         <button onClick={handleExportPDF} className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-surface-container-low rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-surface-container-high transition-all border border-outline-variant/10 shadow-sm flex-1 sm:flex-none">
                                             <Share2 size={14} />
                                             Exportar
@@ -394,7 +489,12 @@ export function AdminClient({ profiles }: AdminClientProps) {
 
                                 {/* Dynamic Event List */}
                                 <div className="col-span-12 space-y-4">
-                                    {events.map((event) => (
+                                    {events.filter((e) => {
+                                        if (filterMonth) {
+                                            return e.event_date.startsWith(filterMonth);
+                                        }
+                                        return true;
+                                    }).map((event) => (
                                         <div
                                             key={event.id}
                                             className="bg-surface-container rounded-3xl p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center hover:bg-surface-container-high transition-all group border border-transparent hover:border-outline-variant/10 gap-4 sm:gap-6"
@@ -433,7 +533,7 @@ export function AdminClient({ profiles }: AdminClientProps) {
                                                                 )}
                                                             </div>
                                                             <span className="text-[11px] font-bold text-white truncate max-w-[80px] sm:max-w-[120px]">{as.profiles?.full_name || 'Sem nome'}</span>
-                                                            <span className="text-[9px] font-black uppercase text-primary tracking-widest bg-primary/10 px-1.5 py-0.5 rounded-md">{FUNCTION_LABELS[as.function_type as FunctionType] || as.function_type}</span>
+                                                            <span className="text-[9px] font-black uppercase text-primary tracking-widest bg-primary/10 px-1.5 py-0.5 rounded-md">{sysFunctions.find(f => f.id === as.function_type)?.label || as.function_type}</span>
                                                         </div>
                                                     )) : (
                                                         <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">Nenhuma equipe escalada</span>
@@ -503,12 +603,22 @@ export function AdminClient({ profiles }: AdminClientProps) {
                                                 <span className="text-[9px] text-gray-500 uppercase font-black tracking-widest">Desde</span>
                                                 <span className="text-xs font-bold text-white">{format(parseISO(profile.created_at), "MMM yyyy")}</span>
                                             </div>
-                                            <button
-                                                onClick={() => handleDeleteMember(profile.id)}
-                                                className="p-3 text-outline hover:text-red-500 hover:bg-red-500/5 rounded-2xl transition-all"
-                                            >
-                                                <Trash2 size={20} />
-                                            </button>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => setEditingMember(profile)}
+                                                    className="p-3 text-outline hover:text-blue-500 hover:bg-blue-500/5 rounded-2xl transition-all"
+                                                    title="Editar Membro"
+                                                >
+                                                    <Edit2 size={20} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteMember(profile.id)}
+                                                    className="p-3 text-outline hover:text-red-500 hover:bg-red-500/5 rounded-2xl transition-all"
+                                                    title="Remover Membro"
+                                                >
+                                                    <Trash2 size={20} />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -637,6 +747,65 @@ export function AdminClient({ profiles }: AdminClientProps) {
                         </div>
                     </div>
                 )}
+
+                {editingMember && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-surface-container-lowest/80 backdrop-blur-sm animate-in fade-in duration-300">
+                        <div className="bg-surface-container-low w-full max-w-2xl rounded-3xl border border-outline-variant/20 shadow-4xl animate-in zoom-in-95 duration-500 overflow-hidden">
+                            <div className="p-8 border-b border-outline-variant/10 flex justify-between items-center bg-surface-container-high">
+                                <h3 className="text-3xl font-black font-manrope text-white tracking-tighter">
+                                    Editar Membro
+                                </h3>
+                                <button onClick={() => setEditingMember(null)} className="p-2 text-gray-400 hover:text-white rounded-full bg-surface-container hover:bg-surface-container-highest transition-all">
+                                    <X size={24} />
+                                </button>
+                            </div>
+
+                            <div className="p-5 sm:p-8 lg:p-10">
+                                <form onSubmit={handleEditMemberSubmit} className="space-y-8">
+                                    <div className="flex flex-col gap-3">
+                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Nome Completo</label>
+                                        <input
+                                            name="full_name"
+                                            required
+                                            defaultValue={editingMember.full_name}
+                                            className="w-full bg-surface-container px-6 py-4 rounded-2xl border border-outline-variant/10 focus:border-primary transition-all text-white font-bold outline-none"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-3">
+                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Email</label>
+                                        <input
+                                            name="email"
+                                            type="email"
+                                            required
+                                            defaultValue={editingMember.email}
+                                            className="w-full bg-surface-container px-6 py-4 rounded-2xl border border-outline-variant/10 focus:border-primary transition-all text-white font-bold outline-none"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col gap-3">
+                                        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 ml-1">Cargo</label>
+                                        <select
+                                            name="role"
+                                            required
+                                            defaultValue={editingMember.role}
+                                            className="w-full bg-surface-container px-6 py-4 rounded-2xl border border-outline-variant/10 focus:border-primary transition-all text-white font-bold outline-none appearance-none"
+                                        >
+                                            <option value="member">Membro Regular (Servas)</option>
+                                            <option value="admin">Administrador (PASCOM)</option>
+                                        </select>
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full py-6 bg-primary text-on-primary font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all mt-4 flex items-center justify-center gap-4 text-xs"
+                                    >
+                                        {loading ? <Loader2 className="animate-spin" /> : <Edit2 size={20} />}
+                                        Salvar Alterações
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </main>
 
             {/* Hidden PDF Export Structure - A4 Landscape Professional Layout */}
@@ -706,13 +875,11 @@ export function AdminClient({ profiles }: AdminClientProps) {
                                 { label: 'Data', center: true },
                                 { label: 'Hora', center: true },
                                 { label: 'Tipo', center: true },
-                                { label: '🔴  Live / Transmissão', left: true },
-                                { label: '📷  Fotos', left: true },
-                                { label: '🎬  Vídeos', left: true },
+                                ...sysFunctions.filter(f => f.is_active).map(f => ({ label: f.label, left: true }))
                             ].map((col, i) => (
                                 <th key={i} style={{
                                     padding: '10px 12px',
-                                    textAlign: col.center ? 'center' : 'left',
+                                    textAlign: ('center' in col && col.center) ? 'center' : 'left',
                                     fontWeight: '800',
                                     fontSize: '8px',
                                     letterSpacing: '1px',
@@ -791,15 +958,15 @@ export function AdminClient({ profiles }: AdminClientProps) {
                                             {isSolenidade ? 'Solenidade' : 'Padrão'}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '10px 12px', borderBottom: '1px solid #e8e8e8', verticalAlign: 'middle', borderLeft: '2px solid #eee' }}>
-                                        {memberCell(liveAssignments, 2)}
-                                    </td>
-                                    <td style={{ padding: '10px 12px', borderBottom: '1px solid #e8e8e8', verticalAlign: 'middle', borderLeft: '1px solid #eee' }}>
-                                        {memberCell(fotosAssignments, isSolenidade ? 3 : 1)}
-                                    </td>
-                                    <td style={{ padding: '10px 12px', borderBottom: '1px solid #e8e8e8', verticalAlign: 'middle', borderLeft: '1px solid #eee' }}>
-                                        {memberCell(videosAssignments, 1)}
-                                    </td>
+                                    {sysFunctions.filter(f => f.is_active).map((f, i) => {
+                                        const assignments = event.assignments?.filter((a: any) => a.function_type === f.id) || [];
+                                        const limit = isSolenidade ? f.limit_solenidade : f.limit_padrao;
+                                        return (
+                                            <td key={f.id} style={{ padding: '10px 12px', borderBottom: '1px solid #e8e8e8', verticalAlign: 'middle', borderLeft: i === 0 ? '2px solid #eee' : '1px solid #eee' }}>
+                                                {memberCell(assignments, limit)}
+                                            </td>
+                                        );
+                                   })}
                                 </tr>
                             );
                         })}

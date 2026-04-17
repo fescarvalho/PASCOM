@@ -24,5 +24,10 @@ export default async function AdminPage() {
         .select('*')
         .order('full_name', { ascending: true });
 
-    return <AdminClient profiles={allMembers || []} />;
+    const { data: functions } = await supabase
+        .from('functions')
+        .select('*')
+        .order('id', { ascending: true });
+
+    return <AdminClient profiles={allMembers || []} sysFunctions={functions || []} />;
 }

@@ -1,7 +1,6 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { SLOT_LIMITS } from '@/types';
 import type { FunctionType, EventType } from '@/types';
 import { revalidatePath } from 'next/cache';
 
@@ -50,11 +49,22 @@ export async function claimSlot(eventId: string, functionType: FunctionType) {
         return { error: 'Evento não encontrado.' };
     }
 
+    const { data: dbFunction } = await supabase
+        .from('functions')
+        .select('*')
+        .eq('id', functionType)
+        .eq('is_active', true)
+        .single();
+        
+    if (!dbFunction) {
+        return { error: 'Esta função está desativada ou não existe.' };
+    }
+
     const eventType = event.event_type as EventType;
-    const limit = SLOT_LIMITS[eventType][functionType];
+    const limit = eventType === 'solenidade' ? dbFunction.limit_solenidade : dbFunction.limit_padrao;
 
     if (limit === 0) {
-        return { error: 'Esta função está desativada no momento.' };
+        return { error: 'Esta função não possui vagas para este tipo de evento.' };
     }
 
     // Count current assignments for this function in this event

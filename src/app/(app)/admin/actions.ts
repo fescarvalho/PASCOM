@@ -351,3 +351,121 @@ export async function updateMemberRole(memberId: string, newRole: 'member' | 'ad
     revalidatePath('/admin');
     return { success: true };
 }
+
+export async function updateMember(memberId: string, formData: {
+    full_name: string;
+    email: string;
+    role: 'member' | 'admin';
+}) {
+    const supabase = await createClient();
+    const adminClient = createAdminClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: 'Não autenticado.' };
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (profile?.role !== 'admin') {
+        return { error: 'Acesso negado.' };
+    }
+
+    if (memberId === user.id && formData.role === 'member') {
+        return { error: 'Você não pode remover sua própria permissão de admin.' };
+    }
+
+    // 1. Update Auth User
+    const { error: authError } = await adminClient.auth.admin.updateUserById(memberId, {
+        email: formData.email,
+        user_metadata: { full_name: formData.full_name }
+    });
+
+    if (authError) {
+        console.error('Auth Update Error:', authError);
+        return { error: `Erro ao atualizar email no Auth: ${authError.message}` };
+    }
+
+    // 2. Update Profile
+    const { error: profileError } = await adminClient
+        .from('profiles')
+        .update({
+            full_name: formData.full_name,
+            email: formData.email,
+            role: formData.role
+        })
+        .eq('id', memberId);
+
+    if (profileError) {
+        console.error('Profile Update Error:', profileError);
+        return { error: `Erro ao atualizar perfil: ${profileError.message}` };
+    }
+
+    revalidatePath('/admin');
+    revalidatePath('/membros');
+    return { success: true };
+}
+
+// ==========================================
+// FUNÇÕES (TASKS)
+// ==========================================
+import type { SysFunction } from '@/types';
+
+export async function createOrUpdateFunction(data: Partial<SysFunction>) {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: 'Não autenticado.' };
+
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+    if (profile?.role !== 'admin') return { error: 'Acesso negado.' };
+
+    if (!data.id || !data.label) {
+        return { error: 'ID (slug) e Label são obrigatórios.' };
+    }
+
+    const { error } = await supabase
+        .from('functions')
+        .upsert({
+            id: data.id.toLowerCase().replace(/[^a-z0-9]/g, ''),
+            label: data.label,
+            limit_padrao: data.limit_padrao ?? 1,
+            limit_solenidade: data.limit_solenidade ?? 1,
+            is_active: data.is_active ?? true,
+        });
+
+    if (error) {
+        console.error('Error upserting function:', error);
+        return { error: 'Erro ao salvar a função. Tente novamente.' };
+    }
+
+    revalidatePath('/admin');
+    revalidatePath('/dashboard');
+    return { success: true };
+}
+
+export async function deleteFunction(id: string) {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: 'Não autenticado.' };
+
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
+    if (profile?.role !== 'admin') return { error: 'Acesso negado.' };
+
+    const { error } = await supabase
+        .from('functions')
+        .delete()
+        .eq('id', id);
+
+    if (error) {
+        console.error('Error deleting function:', error);
+        return { error: 'Erro ao excluir a função. Ela pode ter escalas atreladas.' };
+    }
+
+    revalidatePath('/admin');
+    revalidatePath('/dashboard');
+    return { success: true };
+}

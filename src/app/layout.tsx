@@ -21,6 +21,18 @@ export const metadata: Metadata = {
     title: "PASCOM - Gestão de Escalas",
     description: "Sistema de Gestão de Escalas da Pastoral da Comunicação",
     manifest: "/manifest.json",
+    appleWebApp: {
+        capable: true,
+        statusBarStyle: "default",
+        title: "PASCOM",
+    },
+    formatDetection: {
+        telephone: false,
+    },
+};
+
+export const viewport = {
+    themeColor: "#4361ee",
 };
 
 export default function RootLayout({

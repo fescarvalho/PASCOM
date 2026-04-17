@@ -11,5 +11,11 @@ export default async function DashboardPage() {
         .eq('id', user!.id)
         .single();
 
-    return <DashboardClient userId={user!.id} isAdmin={profile?.role === 'admin'} />;
+    const { data: functions } = await supabase
+        .from('functions')
+        .select('*')
+        .eq('is_active', true)
+        .order('id', { ascending: true });
+
+    return <DashboardClient userId={user!.id} isAdmin={profile?.role === 'admin'} sysFunctions={functions || []} />;
 }

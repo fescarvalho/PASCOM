@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useTransition, useEffect } from 'react';
-import type { EventWithAssignments, FunctionType, EventType, Assignment } from '@/types';
-import { FUNCTION_LABELS, SLOT_LIMITS, ACTIVE_FUNCTIONS } from '@/types';
+import type { EventWithAssignments, FunctionType, EventType, Assignment, SysFunction } from '@/types';
 import { claimSlot, releaseSlot } from '@/app/(app)/dashboard/actions';
 import {
     Calendar,
@@ -59,9 +58,10 @@ interface EventCardProps {
     event: EventWithAssignments;
     currentUserId: string;
     isAdmin: boolean;
+    sysFunctions: SysFunction[];
 }
 
-export function EventCard({ event, currentUserId, isAdmin }: EventCardProps) {
+export function EventCard({ event, currentUserId, isAdmin, sysFunctions }: EventCardProps) {
     const [isPending, startTransition] = useTransition();
     const [activeAction, setActiveAction] = useState<string | null>(null);
     const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
@@ -95,7 +95,8 @@ export function EventCard({ event, currentUserId, isAdmin }: EventCardProps) {
                     function_type: functionType,
                     profiles: { id: currentUserId, full_name: 'Você (Carregando...)', role: 'member' }
                 } as any]);
-                showToast('success', `Vaga de ${FUNCTION_LABELS[functionType]} assumida!`);
+                const funcLabel = sysFunctions.find(f => f.id === functionType)?.label || functionType;
+                showToast('success', `Vaga de ${funcLabel} assumida!`);
             }
             setActiveAction(null);
         });
@@ -109,7 +110,8 @@ export function EventCard({ event, currentUserId, isAdmin }: EventCardProps) {
                 showToast('error', result.error);
             } else {
                 setLocalAssignments(prev => prev.filter(a => a.id !== assignmentId));
-                showToast('success', `Vaga de ${FUNCTION_LABELS[functionType]} liberada.`);
+                const funcLabel = sysFunctions.find(f => f.id === functionType)?.label || functionType;
+                showToast('success', `Vaga de ${funcLabel} liberada.`);
             }
             setActiveAction(null);
         });
@@ -118,12 +120,12 @@ export function EventCard({ event, currentUserId, isAdmin }: EventCardProps) {
     const getAssignmentsForFunction = (functionType: FunctionType): Assignment[] =>
         localAssignments.filter(a => a.function_type === functionType);
 
-    const getSlotLimit = (functionType: FunctionType): number =>
-        SLOT_LIMITS[event.event_type as EventType][functionType];
+    const getSlotLimit = (sysFunc: SysFunction): number =>
+        event.event_type === 'solenidade' ? sysFunc.limit_solenidade : sysFunc.limit_padrao;
 
     // Calculate overall fill progress
-    const totalSlots = ACTIVE_FUNCTIONS.reduce((acc, f) => acc + getSlotLimit(f), 0);
-    const filledSlots = localAssignments.filter(a => ACTIVE_FUNCTIONS.includes(a.function_type)).length;
+    const totalSlots = sysFunctions.reduce((acc, f) => acc + getSlotLimit(f), 0);
+    const filledSlots = localAssignments.filter(a => sysFunctions.some(f => f.id === a.function_type)).length;
     const overallPercent = totalSlots > 0 ? Math.round((filledSlots / totalSlots) * 100) : 0;
     const isFullyStaffed = filledSlots >= totalSlots && totalSlots > 0;
     const hasMySlot = localAssignments.some(a => a.user_id === currentUserId);
@@ -211,24 +213,29 @@ export function EventCard({ event, currentUserId, isAdmin }: EventCardProps) {
 
             {/* Function Slots */}
             <div className="p-5 flex-1 space-y-4">
-                {ACTIVE_FUNCTIONS.map(func => {
-                    const assignments = getAssignmentsForFunction(func);
+                {sysFunctions.map(func => {
+                    const assignments = getAssignmentsForFunction(func.id);
                     const limit = getSlotLimit(func);
                     const isFull = assignments.length >= limit;
                     const availableSlots = limit - assignments.length;
                     const fillPercent = limit > 0 ? (assignments.length / limit) * 100 : 0;
-                    const colors = FUNCTION_COLORS[func];
+                    
+                    const defaultColor = { bg: 'bg-indigo-500/10', border: 'border-indigo-500/30', text: 'text-indigo-400', bar: 'bg-indigo-500' };
+                    const defaultIcon = <Radio size={14} />;
+                    const colors = FUNCTION_COLORS[func.id] || defaultColor;
+                    const icon = FUNCTION_ICONS[func.id] || defaultIcon;
+                    
                     const myAssignment = assignments.find(a => a.user_id === currentUserId);
 
                     if (limit === 0) return null;
 
                     return (
-                        <div key={func} className={`rounded-2xl border p-3.5 transition-all ${colors.bg} ${colors.border}`}>
+                        <div key={func.id} className={`rounded-2xl border p-3.5 transition-all ${colors.bg} ${colors.border}`}>
                             {/* Function header */}
                             <div className="flex items-center justify-between mb-3">
                                 <div className={`flex items-center gap-2 ${colors.text}`}>
-                                    {FUNCTION_ICONS[func]}
-                                    <span className="text-xs font-black tracking-tight">{FUNCTION_LABELS[func]}</span>
+                                    {icon}
+                                    <span className="text-xs font-black tracking-tight">{func.label}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     {/* Mini progress */}
@@ -277,7 +284,7 @@ export function EventCard({ event, currentUserId, isAdmin }: EventCardProps) {
                                             </span>
                                             {isOwnSlot && (
                                                 <button
-                                                    onClick={() => handleRelease(assignment.id, func)}
+                                                    onClick={() => handleRelease(assignment.id, func.id)}
                                                     disabled={isPending}
                                                     className="shrink-0 p-1 rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
                                                     title="Liberar vaga"
@@ -296,7 +303,7 @@ export function EventCard({ event, currentUserId, isAdmin }: EventCardProps) {
                                 {/* Available slots */}
                                 {availableSlots > 0 && (
                                     <button
-                                        onClick={() => handleClaim(func)}
+                                        onClick={() => handleClaim(func.id)}
                                         disabled={isPending || !!myAssignment}
                                         className={`w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold border border-dashed transition-all
                                             ${myAssignment
@@ -304,7 +311,7 @@ export function EventCard({ event, currentUserId, isAdmin }: EventCardProps) {
                                                 : `${colors.border} ${colors.text} hover:bg-white/5 active:scale-[0.98]`
                                             }`}
                                     >
-                                        {activeAction === `claim-${func}` ? (
+                                        {activeAction === `claim-${func.id}` ? (
                                             <Loader2 size={14} className="animate-spin" />
                                         ) : (
                                             <>

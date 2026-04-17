@@ -6,14 +6,15 @@ import { EventCard } from '@/components/EventCard';
 import { format, startOfWeek, endOfWeek, addWeeks, subWeeks, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, CalendarDays, Loader2, RefreshCw } from 'lucide-react';
-import type { EventWithAssignments } from '@/types';
+import type { EventWithAssignments, SysFunction } from '@/types';
 
 interface DashboardClientProps {
     userId: string;
     isAdmin: boolean;
+    sysFunctions: SysFunction[];
 }
 
-export function DashboardClient({ userId, isAdmin }: DashboardClientProps) {
+export function DashboardClient({ userId, isAdmin, sysFunctions }: DashboardClientProps) {
     const [currentWeek, setCurrentWeek] = useState(new Date());
     const [events, setEvents] = useState<EventWithAssignments[]>([]);
     const [loading, setLoading] = useState(true);
@@ -141,6 +142,7 @@ export function DashboardClient({ userId, isAdmin }: DashboardClientProps) {
                                 event={event}
                                 currentUserId={userId}
                                 isAdmin={isAdmin}
+                                sysFunctions={sysFunctions}
                             />
                         </div>
                     ))}
