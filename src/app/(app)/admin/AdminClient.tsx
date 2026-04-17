@@ -289,13 +289,13 @@ export function AdminClient({ profiles, sysFunctions }: AdminClientProps) {
                 html2canvas: { scale: 2, useCORS: true, logging: false, width: 1123 },
                 jsPDF: { 
                     unit: 'px', 
-                    format: [1587, 1123] as [number, number], 
+                    format: [1587, 1123] as any, 
                     orientation: 'landscape' as const, 
                     hotfixes: ['px_scaling'] 
                 }
-            } as any;
+            };
 
-            await html2pdf().set(opt).from(element).save();
+            await (html2pdf() as any).set(opt).from(element).save();
         } catch (error) {
             console.error('PDF error:', error);
             showToast('Erro ao exportar PDF', 'error');
