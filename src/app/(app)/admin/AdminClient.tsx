@@ -287,8 +287,13 @@ export function AdminClient({ profiles, sysFunctions }: AdminClientProps) {
                 filename: `Escala_Pascom_${format(new Date(), "MMM_yyyy")}.pdf`,
                 image: { type: 'jpeg' as const, quality: 1.0 },
                 html2canvas: { scale: 2, useCORS: true, logging: false, width: 1123 },
-                jsPDF: { unit: 'px', format: [1587, 1123] as [number, number], orientation: 'landscape' as const, hotfixes: ['px_scaling'] }
-            };
+                jsPDF: { 
+                    unit: 'px', 
+                    format: [1587, 1123] as [number, number], 
+                    orientation: 'landscape' as const, 
+                    hotfixes: ['px_scaling'] 
+                }
+            } as any;
 
             await html2pdf().set(opt).from(element).save();
         } catch (error) {
