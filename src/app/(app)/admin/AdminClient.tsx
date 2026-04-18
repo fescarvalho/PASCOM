@@ -14,7 +14,7 @@ import {
     deleteFunction,
     deleteMember,
 } from './actions';
-import type { FunctionType, SysFunction } from '@/types';
+import type { FunctionType, SysFunction, Profile, EventWithAssignments, Assignment } from '@/types';
 import {
     Plus,
     Trash2,
@@ -48,16 +48,16 @@ import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 interface AdminClientProps {
-    profiles: any[];
+    profiles: Profile[];
     sysFunctions: SysFunction[];
 }
 
 export function AdminClient({ profiles, sysFunctions }: AdminClientProps) {
     const [isPending, startTransition] = useTransition();
-    const [events, setEvents] = useState<any[]>([]);
+    const [events, setEvents] = useState<EventWithAssignments[]>([]);
     const [loading, setLoading] = useState(true);
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const [editingMember, setEditingMember] = useState<any>(null);
+    const [editingMember, setEditingMember] = useState<Profile | null>(null);
     const [activeTab, setActiveTab] = useState<'events' | 'members' | 'functions'>('events');
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [expandedEvent, setExpandedEvent] = useState<string | null>(null);
@@ -163,9 +163,9 @@ export function AdminClient({ profiles, sysFunctions }: AdminClientProps) {
                     return;
                 }
                 const asByFunc = sysFunctions.filter(f => f.is_active).map(f => {
-                    const as = e.assignments.filter((a: any) => a.function_type === f.id);
+                    const as = e.assignments.filter((a: Assignment) => a.function_type === f.id);
                     if (as.length === 0) return null;
-                    return `> ${f.label}: ${as.map((a: any) => a.profiles?.full_name?.split(' ')[0] || 'Sem nome').join(', ')}`;
+                    return `> ${f.label}: ${as.map((a: Assignment) => a.profiles?.full_name?.split(' ')[0] || 'Sem nome').join(', ')}`;
                 }).filter(Boolean);
 
                 if (asByFunc.length > 0) {
@@ -289,13 +289,12 @@ export function AdminClient({ profiles, sysFunctions }: AdminClientProps) {
                 html2canvas: { scale: 2, useCORS: true, logging: false, width: 1123 },
                 jsPDF: { 
                     unit: 'px', 
-                    format: [1587, 1123] as any, 
+                    format: [1587, 1123] as [number, number], 
                     orientation: 'landscape' as const, 
                     hotfixes: ['px_scaling'] 
                 }
             };
 
-            // @ts-ignore
             await html2pdf().set(pdfOptions).from(element).save();
         } catch (error) {
             console.error('PDF error:', error);
@@ -432,7 +431,7 @@ export function AdminClient({ profiles, sysFunctions }: AdminClientProps) {
                                         <CheckCircle2 size={28} className="text-primary group-hover:scale-110 transition-transform shrink-0" />
                                         <div className="mt-3 sm:mt-4">
                                             <p className="text-3xl sm:text-4xl lg:text-5xl font-black font-manrope text-white mb-1">
-                                                {events.reduce((acc, e) => acc + (e.assignments?.length || 0), 0)}
+                                                {events.reduce((acc: number, e: EventWithAssignments) => acc + (e.assignments?.length || 0), 0)}
                                             </p>
                                             <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest leading-tight">Confirmados</p>
                                         </div>
@@ -442,10 +441,10 @@ export function AdminClient({ profiles, sysFunctions }: AdminClientProps) {
                                         <div className="mt-3 sm:mt-4">
                                             <p className="text-3xl sm:text-4xl lg:text-5xl font-black font-manrope text-white mb-1">
                                                 {(() => {
-                                                    const confirmed = events.reduce((acc, e) => acc + (e.assignments?.length || 0), 0);
-                                                    const totalSlots = events.reduce((acc, e) => {
+                                                    const confirmed = events.reduce((acc: number, e: EventWithAssignments) => acc + (e.assignments?.length || 0), 0);
+                                                    const totalSlots = events.reduce((acc: number, e: EventWithAssignments) => {
                                                         const isSolenidade = e.event_type === 'solenidade';
-                                                        const lim = sysFunctions.filter(f => f.is_active).reduce((s, f) => s + (isSolenidade ? f.limit_solenidade : f.limit_padrao), 0);
+                                                        const lim = sysFunctions.filter(f => f.is_active).reduce((s: number, f: SysFunction) => s + (isSolenidade ? f.limit_solenidade : f.limit_padrao), 0);
                                                         return acc + lim;
                                                     }, 0);
                                                     return Math.max(0, totalSlots - confirmed);
@@ -529,7 +528,7 @@ export function AdminClient({ profiles, sysFunctions }: AdminClientProps) {
                                                 </div>
 
                                                 <div className="flex flex-wrap gap-2">
-                                                    {event.assignments?.length > 0 ? event.assignments.map((as: any) => (
+                                                    {event.assignments?.length > 0 ? event.assignments.map((as: Assignment) => (
                                                         <div key={as.id} className="flex items-center gap-2 bg-surface-container-highest px-2.5 py-1.5 rounded-full border border-outline-variant/10 shadow-sm hover:border-primary/30 transition-colors">
                                                             <div className="w-4 h-4 rounded-full bg-surface-container overflow-hidden flex flex-shrink-0 items-center justify-center text-[8px] font-black text-white border border-outline-variant/20">
                                                                 {as.profiles?.avatar_url ? (
@@ -851,9 +850,9 @@ export function AdminClient({ profiles, sysFunctions }: AdminClientProps) {
                     <div style={{ display: 'flex', gap: '10px' }}>
                         {[
                             { label: 'Eventos', value: String(events.length), color: '#4361ee' },
-                            { label: 'Confirmados', value: String(events.reduce((acc, e) => acc + (e.assignments?.length || 0), 0)), color: '#10b981' },
-                            { label: 'Solenidades', value: String(events.filter((e: any) => e.event_type === 'solenidade').length), color: '#f59e0b' },
-                            { label: 'Missas', value: String(events.filter((e: any) => e.event_type === 'missa_padrao').length), color: '#06b6d4' },
+                            { label: 'Confirmados', value: String(events.reduce((acc: number, e: EventWithAssignments) => acc + (e.assignments?.length || 0), 0)), color: '#10b981' },
+                            { label: 'Solenidades', value: String(events.filter((e: EventWithAssignments) => e.event_type === 'solenidade').length), color: '#f59e0b' },
+                            { label: 'Missas', value: String(events.filter((e: EventWithAssignments) => e.event_type === 'missa_padrao').length), color: '#06b6d4' },
                         ].map((stat, i) => (
                             <div key={i} style={{ background: '#f8f9fa', borderRadius: '8px', padding: '8px 14px', borderTop: `3px solid ${stat.color}`, textAlign: 'center', minWidth: '70px' }}>
                                 <p style={{ margin: 0, fontSize: '20px', fontWeight: '900', color: '#111', lineHeight: 1 }}>{stat.value}</p>
@@ -897,14 +896,14 @@ export function AdminClient({ profiles, sysFunctions }: AdminClientProps) {
                         </tr>
                     </thead>
                     <tbody>
-                        {events.map((event: any, index: number) => {
+                        {events.map((event: EventWithAssignments, index: number) => {
                             const isSolenidade = event.event_type === 'solenidade';
-                            const liveAssignments = event.assignments?.filter((a: any) => a.function_type === 'live') || [];
-                            const fotosAssignments = event.assignments?.filter((a: any) => a.function_type === 'fotos') || [];
-                            const videosAssignments = event.assignments?.filter((a: any) => a.function_type === 'videos') || [];
+                            const liveAssignments = event.assignments?.filter((a: Assignment) => a.function_type === 'live') || [];
+                            const fotosAssignments = event.assignments?.filter((a: Assignment) => a.function_type === 'fotos') || [];
+                            const videosAssignments = event.assignments?.filter((a: Assignment) => a.function_type === 'videos') || [];
                             const rowBg = index % 2 === 0 ? '#ffffff' : '#f5f7ff';
 
-                            const memberCell = (assignments: any[], limit: number) => {
+                            const memberCell = (assignments: Assignment[], limit: number) => {
                                 if (assignments.length === 0) {
                                     return (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -915,7 +914,7 @@ export function AdminClient({ profiles, sysFunctions }: AdminClientProps) {
                                 }
                                 return (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                        {assignments.map((a: any, i: number) => (
+                                        {assignments.map((a: Assignment, i: number) => (
                                             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                                 <div style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#4361ee15', border: '1.5px solid #4361ee50', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '8px', fontWeight: '900', color: '#4361ee', flexShrink: 0 }}>
                                                     {a.profiles?.full_name?.charAt(0) || '?'}
@@ -965,7 +964,7 @@ export function AdminClient({ profiles, sysFunctions }: AdminClientProps) {
                                         </span>
                                     </td>
                                     {sysFunctions.filter(f => f.is_active).map((f, i) => {
-                                        const assignments = event.assignments?.filter((a: any) => a.function_type === f.id) || [];
+                                        const assignments = event.assignments?.filter((a: Assignment) => a.function_type === f.id) || [];
                                         const limit = isSolenidade ? f.limit_solenidade : f.limit_padrao;
                                         return (
                                             <td key={f.id} style={{ padding: '10px 12px', borderBottom: '1px solid #e8e8e8', verticalAlign: 'middle', borderLeft: i === 0 ? '2px solid #eee' : '1px solid #eee' }}>
