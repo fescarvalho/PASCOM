@@ -24,12 +24,32 @@ CREATE TABLE IF NOT EXISTS public.events (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- 3. Tabela de Escalas (Assignments)
+-- 3. Tabela de Funções (Dinâmica)
+CREATE TABLE IF NOT EXISTS public.functions (
+    id TEXT PRIMARY KEY, -- ex: 'live', 'fotos'
+    label TEXT NOT NULL,  -- ex: 'Transmissão Ao Vivo'
+    type TEXT NOT NULL,   -- mantido por compatibilidade
+    limit_padrao INTEGER NOT NULL DEFAULT 1,
+    limit_solenidade INTEGER NOT NULL DEFAULT 1,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Inserção de dados iniciais
+INSERT INTO public.functions (id, label, type, limit_padrao, limit_solenidade)
+VALUES 
+('live', 'Live', 'live', 1, 1),
+('fotos', 'Fotos', 'fotos', 1, 2),
+('videos', 'Vídeos', 'videos', 0, 1),
+('stories', 'Stories', 'stories', 1, 1)
+ON CONFLICT (id) DO NOTHING;
+
+-- 4. Tabela de Escalas (Assignments)
 CREATE TABLE IF NOT EXISTS public.assignments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     event_id UUID NOT NULL REFERENCES public.events(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    function_type TEXT NOT NULL CHECK (function_type IN ('live', 'fotos', 'videos', 'stories')),
+    function_type TEXT NOT NULL REFERENCES public.functions(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE(event_id, user_id, function_type)
 );
