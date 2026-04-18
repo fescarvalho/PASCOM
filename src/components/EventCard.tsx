@@ -75,6 +75,7 @@ export function EventCard({ event, currentUserId, isAdmin, sysFunctions }: Event
     const dayName = format(eventDate, 'EEEE', { locale: ptBR });
     const formattedDate = format(eventDate, "dd 'de' MMMM", { locale: ptBR });
     const isSolenidade = event.event_type === 'solenidade';
+    const isTempoPascal = event.title.toLowerCase().includes('tempo pascal');
 
     const showToast = (type: 'success' | 'error', message: string) => {
         setToast({ type, message });
@@ -131,29 +132,63 @@ export function EventCard({ event, currentUserId, isAdmin, sysFunctions }: Event
     const hasMySlot = localAssignments.some(a => a.user_id === currentUserId);
 
     return (
-        <div className="relative flex flex-col rounded-3xl border border-white/5 bg-zinc-900/40 backdrop-blur-sm overflow-hidden group hover:border-white/10 transition-all duration-300 hover:shadow-[0_0_40px_rgba(0,0,0,0.4)]">
+        <div className={`relative flex flex-col rounded-3xl border backdrop-blur-sm overflow-hidden group transition-all duration-500 hover:shadow-[0_0_40px_rgba(0,0,0,0.4)] ${
+            isSolenidade 
+                ? 'bg-zinc-900/60 border-amber-500/20 shadow-[0_0_20px_rgba(191,149,63,0.1)] hover:border-amber-500/40' 
+                : 'bg-zinc-900/40 border-white/5 hover:border-white/10'
+        }`}>
 
             {/* Top accent bar */}
-            <div className={`h-1 w-full ${isSolenidade ? 'bg-gradient-to-r from-amber-500 via-orange-400 to-amber-500' : 'bg-gradient-to-r from-primary/60 via-primary to-primary/60'}`} />
+            <div className={`h-1 w-full ${
+                isSolenidade 
+                    ? 'bg-gradient-to-r from-amber-600 via-yellow-200 to-amber-600' 
+                    : 'bg-gradient-to-r from-primary/60 via-primary to-primary/60'
+            }`} />
 
             {/* Header */}
             <div className="p-5 pb-4">
                 <div className="flex items-start justify-between gap-3 mb-3">
                     {/* Date block */}
                     <div className="flex items-center gap-3">
-                        <div className={`w-12 h-12 rounded-2xl flex flex-col items-center justify-center border shrink-0 ${isSolenidade ? 'bg-amber-500/10 border-amber-500/30' : 'bg-primary/10 border-primary/20'}`}>
-                            <span className={`text-lg font-black leading-none ${isSolenidade ? 'text-amber-400' : 'text-primary'}`}>
+                        <div className={`w-12 h-12 rounded-2xl flex flex-col items-center justify-center border shrink-0 transition-colors duration-500 ${
+                            isSolenidade
+                                ? 'bg-gradient-to-br from-amber-500/20 to-amber-500/5 border-amber-500/40'
+                                : isTempoPascal
+                                    ? 'bg-white/5 border-white/10'
+                                    : 'bg-primary/10 border-primary/20'
+                        }`}>
+                            <span className={`text-lg font-black leading-none transition-colors duration-500 ${
+                                isSolenidade 
+                                    ? 'text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.4)]' 
+                                    : isTempoPascal
+                                        ? 'text-white'
+                                        : 'text-primary'
+                            }`}>
                                 {format(eventDate, 'dd')}
                             </span>
-                            <span className={`text-[9px] font-bold uppercase tracking-wider ${isSolenidade ? 'text-amber-500/70' : 'text-primary/60'}`}>
+                            <span className={`text-[9px] font-bold uppercase tracking-wider transition-colors duration-500 ${
+                                isSolenidade 
+                                    ? 'text-amber-500/80' 
+                                    : isTempoPascal
+                                        ? 'text-white/60'
+                                        : 'text-primary/60'
+                            }`}>
                                 {format(eventDate, 'MMM', { locale: ptBR })}
                             </span>
                         </div>
                         <div>
-                            <p className={`text-[10px] font-black uppercase tracking-[0.15em] mb-0.5 ${isSolenidade ? 'text-amber-400' : 'text-primary'}`}>
+                            <p className={`text-[10px] font-black uppercase tracking-[0.15em] mb-0.5 transition-colors duration-500 ${
+                                isSolenidade 
+                                    ? 'text-amber-400' 
+                                    : isTempoPascal
+                                        ? 'text-white/40'
+                                        : 'text-primary'
+                            }`}>
                                 {dayName}
                             </p>
-                            <h3 className="text-base font-black text-white tracking-tight leading-tight">
+                            <h3 className={`text-base font-black tracking-tight leading-tight transition-colors duration-500 ${
+                                isSolenidade ? 'text-amber-50/90' : 'text-white'
+                            }`}>
                                 {event.title}
                             </h3>
                             <div className="flex items-center gap-1.5 mt-1 text-zinc-500">
@@ -166,9 +201,9 @@ export function EventCard({ event, currentUserId, isAdmin, sysFunctions }: Event
                     </div>
 
                     {/* Type badge */}
-                    <span className={`shrink-0 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border ${
+                    <span className={`shrink-0 text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full border transition-all duration-500 ${
                         isSolenidade
-                            ? 'bg-amber-500/10 border-amber-500/30 text-amber-400'
+                            ? 'bg-gradient-to-r from-amber-500/20 to-amber-600/20 border-amber-500/40 text-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.1)]'
                             : 'bg-zinc-800 border-zinc-700 text-zinc-400'
                     }`}>
                         {isSolenidade ? '✦ Solenidade' : 'Padrão'}
