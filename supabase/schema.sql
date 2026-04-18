@@ -35,13 +35,13 @@ CREATE TABLE IF NOT EXISTS public.functions (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Inserção de dados iniciais
+-- Inserção de dados iniciais exatos
 INSERT INTO public.functions (id, label, type, limit_padrao, limit_solenidade)
 VALUES 
-('live', 'Live', 'live', 1, 1),
-('fotos', 'Fotos', 'fotos', 1, 2),
-('videos', 'Vídeos', 'videos', 0, 1),
-('stories', 'Stories', 'stories', 1, 1)
+('live', 'Transmissão Ao Vivo', 'live', 1, 2),
+('fotos', 'Fotografia', 'fotos', 1, 2),
+('videos', 'Captação de Vídeo', 'videos', 1, 2),
+('stories', 'Cobertura Stories', 'stories', 1, 1)
 ON CONFLICT (id) DO NOTHING;
 
 -- 4. Tabela de Escalas (Assignments)
@@ -69,6 +69,16 @@ CREATE INDEX IF NOT EXISTS idx_assignments_user ON public.assignments(user_id);
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.assignments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.functions ENABLE ROW LEVEL SECURITY;
+
+-- FUNCTIONS: Todos autenticados podem ver
+CREATE POLICY "functions_select_authenticated" ON public.functions
+    FOR SELECT TO authenticated USING (true);
+
+-- FUNCTIONS: Somente admins podem gerenciar
+CREATE POLICY "functions_all_admin" ON public.functions
+    FOR ALL TO authenticated
+    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
 
 -- PROFILES: Todos autenticados podem ver
 CREATE POLICY "profiles_select_authenticated" ON public.profiles

@@ -30,10 +30,10 @@ export default async function AdminPage() {
         .order('id', { ascending: true });
 
     const defaultFunctions: any[] = [
-        { id: 'live', label: 'Live', type: 'live', limit_padrao: 1, limit_solenidade: 1, is_active: true },
-        { id: 'fotos', label: 'Fotos', type: 'fotos', limit_padrao: 1, limit_solenidade: 2, is_active: true },
-        { id: 'videos', label: 'Vídeos', type: 'videos', limit_padrao: 0, limit_solenidade: 1, is_active: true },
-        { id: 'stories', label: 'Stories', type: 'stories', limit_padrao: 1, limit_solenidade: 1, is_active: true }
+        { id: 'live', label: 'Transmissão Ao Vivo', type: 'live', limit_padrao: 1, limit_solenidade: 2, is_active: true },
+        { id: 'fotos', label: 'Fotografia', type: 'fotos', limit_padrao: 1, limit_solenidade: 2, is_active: true },
+        { id: 'videos', label: 'Captação de Vídeo', type: 'videos', limit_padrao: 1, limit_solenidade: 2, is_active: true },
+        { id: 'stories', label: 'Cobertura Stories', type: 'stories', limit_padrao: 1, limit_solenidade: 1, is_active: true }
     ];
 
     return <AdminClient profiles={allMembers || []} sysFunctions={functions || defaultFunctions} />;
