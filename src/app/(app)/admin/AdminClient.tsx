@@ -231,6 +231,7 @@ export function AdminClient({ profiles, sysFunctions }: AdminClientProps) {
         };
 
         try {
+            if (!editingMember) return;
             const res = await updateMember(editingMember.id, data);
             if (res.success) {
                 showToast(`Membro atualizado com sucesso!`, 'success');

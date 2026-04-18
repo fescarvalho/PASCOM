@@ -9,6 +9,7 @@ const withPWA = withPWAInit({
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ['padded-state-unheated.ngrok-free.dev'],
+  turbopack: {},
 };
 
 export default withPWA(nextConfig);
